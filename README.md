@@ -4,9 +4,10 @@
 
 ## This software was made to help baylor students buy and sell textbooks in a safe and affordable way.
 
-[Iteration 1 PDF](https://github.com/TomPechulis/BBB.github.io/raw/master/iteration1.pdf)
+## Iteration ONE
+[PDF](https://github.com/TomPechulis/BBB.github.io/raw/master/iteration1.pdf)
 
-[Iteration 1 Zip](https://github.com/TomPechulis/BBB.github.io/raw/master/Iteration1.zip)
+[Zip](https://github.com/TomPechulis/BBB.github.io/raw/master/Iteration1.zip)
 
 [Issue Tracking](https://trello.com/b/wGqLWLLN/csi-3471-bbb)
 

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BBB {
+
+    //yo
     private static List<Account> registry = new ArrayList<>();
     private static File file = new File("src/main/resources/userRegistry.csv");
 

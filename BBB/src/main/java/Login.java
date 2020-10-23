@@ -4,6 +4,11 @@ import java.awt.event.ActionEvent;
 
 public class Login {
     private boolean checkLogin = false;
+    private Account curr = null;
+
+    public Account getAcc(){
+        return curr;
+    }
 
     public void getLogin(final Library library){
         final Object lock = new Object();
@@ -40,6 +45,7 @@ public class Login {
                             "signed in.", "B.B.B - Login", JOptionPane.PLAIN_MESSAGE);
 
                     checkLogin = true;
+                    curr = new Account(loginEmail.getText(), loginPassword.getText());
                     loginFrame.dispose();
                     synchronized(lock) {
                         lock.notify();
@@ -90,6 +96,8 @@ public class Login {
                         }
                         else{
                             library.addAccount(emailText.getText(),password.getText());
+                            Account a = new Account(emailText.getText(), password.getText());
+                            library.addProfile(a);
 
                             JOptionPane.showMessageDialog(null,"Notice: Your account" +
                                     " has been created", "B.B.B - Login", JOptionPane.PLAIN_MESSAGE);

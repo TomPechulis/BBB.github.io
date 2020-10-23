@@ -5,9 +5,11 @@ import java.util.List;
 public class Library {
     private final List<Account> accountRegistry = new ArrayList<>();
     private final List<Listing> listingRegistry = new ArrayList<>();
+    private final List<Profile> profileRegistry = new ArrayList<>();
 
     private final File accountFile = new File("src/main/resources/userRegistry.csv");
     private final File listingFile = new File("src/main/resources/listingRegistry.csv");
+    private final File profileFile = new File("src/main/resources/profileRegistry.csv");
 
     public Library(){
         fillLibrary();
@@ -15,6 +17,25 @@ public class Library {
 
     public boolean checkAccountRegistry(String email, String password){
         return accountRegistry.contains(new Account(email,password));
+    }
+
+    public Profile getProfile(Account a){
+        Profile p = new Profile();
+        double r = 0.00;
+        Image pic = null;
+        List<Listing> l = null;
+        for(Profile b : profileRegistry){
+            if(b.getAcc().getEmail().equals(a.getEmail())){
+                r = b.getRating();
+                pic = b.getProfilePic();
+                l = b.getListingList();
+            }
+        }
+        p.setProfilePic(pic);
+        p.setListingList(l);
+        p.setRating(r);
+        p.setAcc(a);
+        return p;
     }
 
     public void addAccount(String email, String password){
@@ -32,6 +53,86 @@ public class Library {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void addProfile(Account a){
+        try {
+            FileWriter fr = new FileWriter(profileFile,true);
+            fr.append(a.getEmail());
+            fr.append(",");
+            fr.append(a.getPassword());
+            fr.append(",");
+            fr.append("0.00");
+            fr.append(",");
+            fr.append("null");
+            fr.append(",");
+            fr.append("null");
+
+            fr.append("\n");
+
+            fr.flush();
+            fr.close();
+
+            profileRegistry.add(new Profile(a, 0.00, null, null));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateProfile(Profile p) throws IOException {
+        int count = 0;
+        PrintWriter writer = new PrintWriter(profileFile);
+        writer.print("");
+        writer.close();
+
+        for(Profile b : profileRegistry){
+            if(b.getAcc().getEmail().equals(p.getAcc().getEmail())){
+                profileRegistry.set(count, p);
+            }
+            FileWriter fr = new FileWriter(profileFile,true);
+            fr.append(b.getAcc().getEmail());
+            fr.append(",");
+            fr.append(b.getAcc().getPassword());
+            fr.append(",");
+            String temp = String.valueOf(b.getRating());
+            fr.append(temp);
+            fr.append(",");
+            String str;
+            if(b.getInit()){
+                str = b.getProfilePic().getPath().getAbsolutePath();
+            }else{
+                str = "null";
+            }
+
+            fr.append(str);
+            fr.append(",");
+            fr.append("null");
+
+            fr.append("\n");
+
+            fr.flush();
+            fr.close();
+            count++;
+        }
+        count = 0;
+        writer = new PrintWriter(accountFile);
+        writer.print("");
+        writer.close();
+        for(Account a : accountRegistry){
+            if(a.getEmail().equals(p.getAcc().getEmail())){
+                accountRegistry.set(count, p.getAcc());
+            }
+            FileWriter fr = new FileWriter(accountFile,true);
+            fr.append(a.getEmail());
+            fr.append(",");
+            fr.append(a.getPassword());
+            fr.append("\n");
+
+            fr.flush();
+            fr.close();
+            count++;
         }
     }
 
@@ -88,5 +189,26 @@ public class Library {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+        try{
+            BufferedReader profileReader = new BufferedReader(new FileReader(profileFile));
+            String profileLine;
+
+            while ((profileLine = profileReader.readLine()) != null) {
+                //Get Email and Password
+                String [] data = profileLine.split(",");
+                Account a = new Account(data[0], data[1]);
+                File f = new File(data[2]);
+                Image i = new Image(f);
+
+                Profile profile = new Profile(a, Double.parseDouble(data[2]), i, null);
+
+                profileRegistry.add(profile);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

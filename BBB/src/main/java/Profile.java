@@ -12,7 +12,6 @@ public class Profile {
     private Account acc;
     private boolean init = false;
 
-
     Profile(){
     }
 
@@ -36,6 +35,7 @@ public class Profile {
     public void setProfilePic(Image i){
         profilePic = i;
     }
+
     public boolean getInit(){
         return init;
     }
@@ -56,8 +56,6 @@ public class Profile {
     public Account getAcc(){
         return this.acc;
     }
-
-
 
     public void editProfile(){
         final Object lock = new Object();

@@ -20,22 +20,24 @@ public class Library {
     }
 
     public Profile getProfile(Account a){
-        Profile p = new Profile();
-        double r = 0.00;
-        Image pic = null;
-        List<Listing> l = null;
+        Profile profile = new Profile();
+        double rating = 0.00;
+        Image image = null;
+        List<Listing> listingList = null;
+
         for(Profile b : profileRegistry){
             if(b.getAcc().getEmail().equals(a.getEmail())){
-                r = b.getRating();
-                pic = b.getProfilePic();
-                l = b.getListingList();
+                rating = b.getRating();
+                image = b.getProfilePic();
+                listingList = b.getListingList();
             }
         }
-        p.setProfilePic(pic);
-        p.setListingList(l);
-        p.setRating(r);
-        p.setAcc(a);
-        return p;
+
+        profile.setProfilePic(image);
+        profile.setListingList(listingList);
+        profile.setRating(rating);
+        profile.setAcc(a);
+        return profile;
     }
 
     public void addAccount(String email, String password){
@@ -68,7 +70,6 @@ public class Library {
             fr.append("null");
             fr.append(",");
             fr.append("null");
-
             fr.append("\n");
 
             fr.flush();

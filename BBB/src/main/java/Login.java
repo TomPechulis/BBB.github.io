@@ -17,7 +17,7 @@ public class Login {
         final JPanel loginPanel = new JPanel(new GridLayout(3,1));
 
         loginFrame.setSize(400,150);
-        loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         final JLabel loginEmailLabel = new JLabel("Email:");
         final JTextField loginEmail = new JTextField();

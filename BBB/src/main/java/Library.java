@@ -40,6 +40,16 @@ public class Library {
         return profile;
     }
 
+    public List<Listing> getListings(Profile p){
+        List<Listing> listingList = new ArrayList<>();
+        for(Listing l : listingRegistry){
+            if(l.getSeller().equals(p.getAcc().getEmail())){
+                listingList.add(l);
+            }
+        }
+        return listingList;
+    }
+
     public void addAccount(String email, String password){
         try {
             FileWriter fr = new FileWriter(accountFile,true);
@@ -137,27 +147,70 @@ public class Library {
         }
     }
 
-    public void addListing(String author, String title, Integer isbn, Double price, String seller){
+    public void addListing(Listing l){
         try {
             FileWriter fr = new FileWriter(listingFile,true);
-            fr.append(author);
+            fr.append(l.getSeller());
             fr.append(",");
-            fr.append(title);
+            fr.append(l.getTitle());
             fr.append(",");
-            fr.append(isbn.toString());
+            fr.append(l.getAuthor());
             fr.append(",");
-            fr.append(price.toString());
+            fr.append(l.getIsbn());
             fr.append(",");
-            fr.append(seller);
+            fr.append(l.getPrice().toString());
+            fr.append(",");
+            fr.append(l.getEdition());
+            fr.append(",");
+            fr.append(l.getCondition());
+            fr.append(",");
+            fr.append(l.getImage().getPath().getAbsolutePath());
             fr.append("\n");
 
             fr.flush();
             fr.close();
 
-            listingRegistry.add(new Listing(author,title,isbn,price,seller));
+            listingRegistry.add(l);
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void updateListing(Listing l) throws IOException {
+        int count = 0;
+        PrintWriter writer = new PrintWriter(listingFile);
+        writer.print("");
+        writer.close();
+
+        for(Listing b : listingRegistry){
+            /*
+            if(b.getID() == l.getID()){
+                listingRegistry.set(count, l);
+            }
+
+             */
+            FileWriter fr = new FileWriter(listingFile,true);
+            fr.append(b.getSeller());
+            fr.append(",");
+            fr.append(b.getTitle());
+            fr.append(",");
+            fr.append(b.getAuthor());
+            fr.append(",");
+            fr.append(b.getIsbn());
+            fr.append(",");
+            fr.append(b.getPrice().toString());
+            fr.append(",");
+            fr.append(b.getEdition());
+            fr.append(",");
+            fr.append(b.getCondition());
+            fr.append(",");
+            fr.append(b.getImage().getPath().getAbsolutePath());
+            fr.append("\n");
+
+            fr.flush();
+            fr.close();
+            count++;
         }
     }
 
@@ -183,7 +236,8 @@ public class Library {
             while ((listingLine = listingReader.readLine()) != null) {
                 //Get Email and Password
                 String [] data = listingLine.split(",");
-                Listing listing = new Listing(data[0],data[1],Integer.parseInt(data[2]),Double.parseDouble(data[3]),data[4]);
+                Image temp = new Image(new File(data[7]));
+                Listing listing = new Listing(data[0],data[1],data[2],data[3],Double.parseDouble(data[4]),data[5],data[6],temp);
 
                 listingRegistry.add(listing);
             }

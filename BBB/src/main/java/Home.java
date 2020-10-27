@@ -78,9 +78,9 @@ public class Home {
 
 class BookTable extends JPanel {
 
-    private final JTextField filterAuthorText;
-    private final JTextField filterTitleText;
-    private final JTextField filterISBNText;
+    private final JTextField filterSearchText;
+    //private final JTextField filterTitleText;
+    //private final JTextField filterISBNText;
     private final TableRowSorter<MyTableModel> sorter;
 
     public BookTable() {
@@ -96,83 +96,60 @@ class BookTable extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(table);
 
+        ButtonGroup g = new ButtonGroup();
+        JRadioButton toggle = new JRadioButton("Title");
+        JRadioButton toggle2 = new JRadioButton("Author");
+        JRadioButton toggle3 = new JRadioButton("ISBN");
+        g.add(toggle);
+        g.add(toggle2);
+        g.add(toggle3);
+
+
         JPanel form = new JPanel();
 
-        JLabel l1 = new JLabel("Author:", SwingConstants.TRAILING);
+        form.add(toggle);
+        form.add(toggle2);
+        form.add(toggle3);
+
+        JLabel l1 = new JLabel("SEARCH:", SwingConstants.TRAILING);
 
         form.add(l1);
-        filterAuthorText = new JTextField(10);
+        filterSearchText = new JTextField(10);
 
         //Whenever filterText changes, invoke newFilter.
-        filterAuthorText.getDocument().addDocumentListener(
+        filterSearchText.getDocument().addDocumentListener(
                 new DocumentListener() {
                     public void changedUpdate(DocumentEvent e) {
-                        newAuthorFilter();
+                        if(toggle.isSelected()) {
+                            newAuthorFilter();
+                        }else if(toggle2.isSelected()){
+                            newTitleFilter();
+                        }else if(toggle3.isSelected()){
+                            newISBNFilter();
+                        }
                     }
                     public void insertUpdate(DocumentEvent e) {
-                        newAuthorFilter();
+                        if(toggle.isSelected()) {
+                            newAuthorFilter();
+                        }else if(toggle2.isSelected()){
+                            newTitleFilter();
+                        }else if(toggle3.isSelected()){
+                            newISBNFilter();
+                        }
                     }
                     public void removeUpdate(DocumentEvent e) {
-                        newAuthorFilter();
+                        if(toggle.isSelected()) {
+                            newAuthorFilter();
+                        }else if(toggle2.isSelected()){
+                            newTitleFilter();
+                        }else if(toggle3.isSelected()){
+                            newISBNFilter();
+                        }
                     }
                 });
-        l1.setLabelFor(filterAuthorText);
-        form.add(filterAuthorText);
+        l1.setLabelFor(filterSearchText);
+        form.add(filterSearchText);
 
-
-        JLabel l2 = new JLabel("Title:", SwingConstants.TRAILING);
-        form.add(l2);
-        filterTitleText = new JTextField(10);
-        //l2.setLabelFor(statusText);
-        filterTitleText.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        newTitleFilter();
-                    }
-
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newTitleFilter();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newTitleFilter();
-                    }
-                }
-
-        );
-        form.add(filterTitleText);
-        //SpringUtilities.makeCompactGrid(form, 2, 2, 6, 6, 6, 6);
-        //add(form);
-
-        JLabel l3 = new JLabel("ISBN:", SwingConstants.TRAILING);
-        form.add(l3);
-        filterISBNText = new JTextField(10);
-
-        filterISBNText.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        newISBNFilter();
-                    }
-
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newISBNFilter();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newISBNFilter();
-                    }
-                }
-
-        );
-        form.add(filterISBNText);
 
         add(form);
 
@@ -187,7 +164,7 @@ class BookTable extends JPanel {
         RowFilter<MyTableModel, Object> rf = null;
         //If current expression doesn't parse, don't update.
         try {
-            rf = RowFilter.regexFilter(filterAuthorText.getText(), 0);
+            rf = RowFilter.regexFilter(filterSearchText.getText(), 0);
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
@@ -198,7 +175,7 @@ class BookTable extends JPanel {
         RowFilter<MyTableModel, Object> rf = null;
         //If current expression doesn't parse, don't update.
         try {
-            rf = RowFilter.regexFilter(filterTitleText.getText(), 1);
+            rf = RowFilter.regexFilter(filterSearchText.getText(), 1);
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
@@ -209,7 +186,7 @@ class BookTable extends JPanel {
         RowFilter<MyTableModel, Object> rf = null;
         //If current expression doesn't parse, don't update.
         try {
-            rf = RowFilter.regexFilter(filterISBNText.getText(), 2);
+            rf = RowFilter.regexFilter(filterSearchText.getText(), 2);
         } catch (java.util.regex.PatternSyntaxException e) {
             return;
         }
@@ -218,8 +195,8 @@ class BookTable extends JPanel {
 
 
     class MyTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"Author",
-                "Title",
+        private final String[] columnNames = {"Title",
+                "Author",
                 "ISBN",
                 "edition",
                 "Price",

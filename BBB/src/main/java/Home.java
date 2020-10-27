@@ -25,22 +25,8 @@ public class Home {
 
         homeFrame.setSize(700, 300);
 
-        JPanel jComp1 = getMyAccount(a);
-        pane.addTab("My Account", jComp1);
-
-        pane.addTab("Book Search", new BookTable(library));
-
-        pane.addTab("Seller Search", new SellerTable());
-
-        homeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        homeFrame.add(pane);
-        homeFrame.setVisible(true);
-    }
-
-    public JPanel getMyAccount(Account a) throws IOException {
-
-        JPanel frame = new JPanel();
-        frame.setLayout(new BoxLayout(frame, BoxLayout.PAGE_AXIS));
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
         JLabel label = new JLabel("Account: " + a.getEmail());
 
@@ -55,11 +41,15 @@ public class Home {
             label3 = new JLabel();
         }
         JButton newListingButton = new JButton("New Listing");
+        AccountListingTable alt = new AccountListingTable(library, profile[0]);
 
         newListingButton.addActionListener(e -> {
             profile[0] = library.getProfile(a);
-            Listing l = profile[0].newListing();
-            library.addListing(l);
+            JDialog dialog = new JDialog(homeFrame,true);
+            dialog.setTitle("B.B.B - New Listing");
+            Listing l = profile[0].newListing(dialog);
+
+
         });
 
         JButton editProfileButton = new JButton("Edit Profile");
@@ -67,19 +57,34 @@ public class Home {
         editProfileButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e){
                 profile[0] = library.getProfile(a);
-                profile[0].editProfile();
+                JDialog dialog = new JDialog(homeFrame,true);
+                dialog.setTitle("B.B.B - Edit Profile");
+                profile[0].editProfile(dialog);
+
+                try{
+                    library.updateProfile(profile[0]);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
         });
 
-        frame.add(label);
-        frame.add(label2);
-        frame.add(label3);
-        frame.add(newListingButton);
-        frame.add(editProfileButton);
-        AccountListingTable alt = new AccountListingTable(library, profile[0]);
-        frame.add(alt);
+        panel.add(label);
+        panel.add(label2);
+        panel.add(label3);
+        panel.add(newListingButton);
+        panel.add(editProfileButton);
+        panel.add(alt);
 
-        return frame;
+        pane.addTab("My Account", panel);
+
+        pane.addTab("Book Search", new BookTable(library));
+
+        pane.addTab("Seller Search", new SellerTable());
+
+        homeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        homeFrame.add(pane);
+        homeFrame.setVisible(true);
     }
 
 }
@@ -354,6 +359,12 @@ class AccountListingTable extends JPanel {
     private boolean DEBUG = false;
     Library library = null;
     Profile profile = null;
+    DefaultTableModel tableModel = null;
+
+    public void addRow(Listing l){
+        String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+        tableModel.addRow(row);
+    }
 
     public AccountListingTable(Library library, Profile profile) throws IOException {
         super();
@@ -363,8 +374,8 @@ class AccountListingTable extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        String [] columns = {"Email", "Title", "Author", "ISBN", "Price", "Edition", "Condition", "Image"};
-        DefaultTableModel tableModel = new DefaultTableModel(columns,0);
+        String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image"};
+        tableModel = new DefaultTableModel(columns,0);
 
         parseTable(tableModel,library,profile);
 
@@ -384,7 +395,7 @@ class AccountListingTable extends JPanel {
         List<Listing> listingList = library.getListings(profile);
 
         for(Listing l : listingList){
-            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), l.getIsbn(),String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
             table.addRow(row);
         }
     }

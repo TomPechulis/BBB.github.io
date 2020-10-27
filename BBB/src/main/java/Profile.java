@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
 
@@ -57,13 +59,11 @@ public class Profile {
         return this.acc;
     }
 
-    public void editProfile(){
-        final Object lock = new Object();
-        final JFrame loginFrame = new JFrame("B.B.B - Login");
+    public void editProfile(JDialog dialog){
         final JPanel loginPanel = new JPanel(new GridLayout(3,1));
 
-        loginFrame.setSize(600,150);
-        loginFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dialog.setSize(600,150);
+        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         final JLabel passwordLabel = new JLabel("New Password:");
         final JTextField password = new JTextField();
@@ -117,35 +117,39 @@ public class Profile {
                     a.setPassword(password.getText());
                     setAcc(a);
                 }
-                loginFrame.setVisible(false);
-                loginFrame.dispose();
+                dialog.setVisible(false);
+                dialog.dispose();
             }
         });
 
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                createWindow(loginFrame);
-                synchronized(lock) {
-                    lock.notify();
-                }
+                createWindow(dialog);
             }
         });
 
         loginPanel.add(saveButton);
         loginPanel.add(cancelButton);
 
-        loginFrame.add(loginPanel, BorderLayout.CENTER);
-        loginFrame.setVisible(true);
+        dialog.add(loginPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
     }
 
-    public Listing newListing(){
-        final Object lock = new Object();
-        final JFrame listingFrame = new JFrame("B.B.B - New Listing");
+    public Listing newListing(JDialog dialog){
         final JPanel listingPanel = new JPanel(new GridLayout(8,1));
 
-        listingFrame.setSize(600,400);
-        listingFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        dialog.setSize(600,400);
+        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        dialog.addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                dialog.setVisible(false);
+                dialog.dispose();
+            }
+        });
 
         final JLabel titleLabel = new JLabel("Title:");
         final JTextField title = new JTextField();
@@ -209,8 +213,8 @@ public class Profile {
 
                     l1[0].setSeller(getAcc().getEmail());
 
-                    listingFrame.setVisible(false);
-                    listingFrame.dispose();
+                    dialog.setVisible(false);
+                    dialog.dispose();
                 }
                 else{
                     JOptionPane.showMessageDialog(null,"Error: One or more empty fields"
@@ -222,10 +226,7 @@ public class Profile {
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                createWindow(listingFrame);
-                synchronized(lock) {
-                    lock.notify();
-                }
+                createWindow(dialog);
             }
         });
 
@@ -247,12 +248,13 @@ public class Profile {
         listingPanel.add(saveButton);
         listingPanel.add(cancelButton);
 
-        listingFrame.add(listingPanel, BorderLayout.CENTER);
-        listingFrame.setVisible(true);
+        dialog.add(listingPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
+
         return l1[0];
     }
 
-    public void createWindow(JFrame log) {
+    public void createWindow(JDialog log) {
         JFrame frame = new JFrame("Confirm");
 
         JPanel panel = new JPanel();

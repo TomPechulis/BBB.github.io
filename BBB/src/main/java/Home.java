@@ -3,6 +3,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,7 +28,7 @@ public class Home {
         JPanel jComp1 = getMyAccount(a);
         pane.addTab("My Account", jComp1);
 
-        pane.addTab("Book Search", new BookTable());
+        pane.addTab("Book Search", new BookTable(library));
 
         pane.addTab("Seller Search", new SellerTable());
 
@@ -86,20 +87,19 @@ public class Home {
 class BookTable extends JPanel {
 
     private final JTextField filterSearchText;
-    //private final JTextField filterTitleText;
-    //private final JTextField filterISBNText;
-    private final TableRowSorter<MyTableModel> sorter;
+    private final TableRowSorter<TableModel> sorter;
 
-    public BookTable() {
+    public BookTable(Library library) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        MyTableModel model = new MyTableModel();
-        sorter = new TableRowSorter<>(model);
-        JTable table = new JTable(model);
+        String [] columns = {"Email", "Title", "Author", "ISBN", "Price", "Edition", "Condition", "Image"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns,0);
+
+        parseTable(tableModel,library);
+
+        JTable table = new JTable(tableModel);
+        sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
-        table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-        table.setFillsViewportHeight(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JScrollPane scrollPane = new JScrollPane(table);
 
@@ -110,7 +110,6 @@ class BookTable extends JPanel {
         g.add(toggle);
         g.add(toggle2);
         g.add(toggle3);
-
 
         JPanel form = new JPanel();
 
@@ -123,159 +122,56 @@ class BookTable extends JPanel {
         form.add(l1);
         filterSearchText = new JTextField(10);
 
-        //Whenever filterText changes, invoke newFilter.
-        filterSearchText.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        if(toggle.isSelected()) {
-                            newAuthorFilter();
-                        }else if(toggle2.isSelected()){
-                            newTitleFilter();
-                        }else if(toggle3.isSelected()){
-                            newISBNFilter();
-                        }
+        filterSearchText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                search(filterSearchText.getText());
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                search(filterSearchText.getText());
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                search(filterSearchText.getText());
+            }
+            public void search(String str) {
+                if(toggle.isSelected()) {
+                    if (str.length() == 0) {
+                        sorter.setRowFilter(null);
+                    } else {
+                        sorter.setRowFilter(RowFilter.regexFilter(str,1));
                     }
-                    public void insertUpdate(DocumentEvent e) {
-                        if(toggle.isSelected()) {
-                            newAuthorFilter();
-                        }else if(toggle2.isSelected()){
-                            newTitleFilter();
-                        }else if(toggle3.isSelected()){
-                            newISBNFilter();
-                        }
+                }else if(toggle2.isSelected()){
+                    if (str.length() == 0) {
+                        sorter.setRowFilter(null);
+                    } else {
+                        sorter.setRowFilter(RowFilter.regexFilter(str,2));
                     }
-                    public void removeUpdate(DocumentEvent e) {
-                        if(toggle.isSelected()) {
-                            newAuthorFilter();
-                        }else if(toggle2.isSelected()){
-                            newTitleFilter();
-                        }else if(toggle3.isSelected()){
-                            newISBNFilter();
-                        }
+                }else if(toggle3.isSelected()){
+                    if (str.length() == 0) {
+                        sorter.setRowFilter(null);
+                    } else {
+                        sorter.setRowFilter(RowFilter.regexFilter(str,3));
                     }
-                });
+                }
+            }
+        });
         l1.setLabelFor(filterSearchText);
         form.add(filterSearchText);
-
 
         add(form);
 
         add(scrollPane);
     }
 
-    /**
-     * Update the row filter regular expression from the expression in
-     * the text box.
-     */
-    private void newAuthorFilter() {
-        RowFilter<MyTableModel, Object> rf;
-        //If current expression doesn't parse, don't update.
-        try {
-            rf = RowFilter.regexFilter(filterSearchText.getText(), 0);
-        } catch (java.util.regex.PatternSyntaxException e) {
-            return;
+    public static void parseTable(DefaultTableModel table,Library library) throws IOException {
+        List<Listing> listingList = library.getListingRegistry();
+
+        for(Listing l : listingList){
+            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+            table.addRow(row);
         }
-        sorter.setRowFilter(rf);
-    }
-
-    private void newTitleFilter() {
-        RowFilter<MyTableModel, Object> rf;
-        //If current expression doesn't parse, don't update.
-        try {
-            rf = RowFilter.regexFilter(filterSearchText.getText(), 1);
-        } catch (java.util.regex.PatternSyntaxException e) {
-            return;
-        }
-        sorter.setRowFilter(rf);
-    }
-
-    private void newISBNFilter() {
-        RowFilter<MyTableModel, Object> rf;
-        //If current expression doesn't parse, don't update.
-        try {
-            rf = RowFilter.regexFilter(filterSearchText.getText(), 2);
-        } catch (java.util.regex.PatternSyntaxException e) {
-            return;
-        }
-        sorter.setRowFilter(rf);
-    }
-
-
-    class MyTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"Title",
-                "Author",
-                "ISBN",
-                "edition",
-                "Price",
-                "Seller"};
-
-        private final Object[][] data;
-
-        MyTableModel() {
-            data = new Object[100][6];
-
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(new File("src/main/resources/listingRegistry.csv")));
-            } catch (FileNotFoundException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            String line;
-            try {
-                int row = 0;
-                while (true) {
-                    assert reader != null;
-                    if ((line = reader.readLine()) == null) break;
-                    String[] split = line.split(",");
-                    for (int col = 0; col < 6; col++) {
-                        data[row][col] = split[col];
-                    }
-                    row++;
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        }
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return data.length;
-        }
-
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
-
-        /*
-         * JTable uses this method to determine the default renderer/
-         * editor for each cell.  If we didn't implement this method,
-         * then the last column would contain text ("true"/"false"),
-         * rather than a check box.
-         */
-        public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
-        }
-
-
-        /*
-         * Don't need to implement this method unless your table's
-         * editable.
-         */
-        public boolean isCellEditable(int row, int col) {
-            return col >= 2;
-        }
-
     }
 }
 

@@ -50,6 +50,10 @@ public class Library {
         return listingList;
     }
 
+    public List<Listing> getListingRegistry() {
+        return listingRegistry;
+    }
+
     public void addAccount(String email, String password){
         try {
             FileWriter fr = new FileWriter(accountFile,true);

@@ -119,9 +119,6 @@ public class Profile {
                 }
                 loginFrame.setVisible(false);
                 loginFrame.dispose();
-                synchronized(lock) {
-                    lock.notify();
-                }
             }
         });
 
@@ -140,15 +137,6 @@ public class Profile {
 
         loginFrame.add(loginPanel, BorderLayout.CENTER);
         loginFrame.setVisible(true);
-
-        synchronized(lock) {
-            try {
-                lock.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
     }
 
     public Listing newListing(){
@@ -223,9 +211,6 @@ public class Profile {
 
                     listingFrame.setVisible(false);
                     listingFrame.dispose();
-                    synchronized(lock) {
-                        lock.notify();
-                    }
                 }
                 else{
                     JOptionPane.showMessageDialog(null,"Error: One or more empty fields"
@@ -264,14 +249,6 @@ public class Profile {
 
         listingFrame.add(listingPanel, BorderLayout.CENTER);
         listingFrame.setVisible(true);
-
-        synchronized(lock) {
-            try {
-                lock.wait();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         return l1[0];
     }
 

@@ -2,17 +2,21 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-
-import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.List;
 
 public class Home {
-    Home() {
+    Library library;
+
+    public Home(Library i){
+        library = i;
     }
-    public void getHome(Library library, Account a) {
+
+    public void getHome(Account a) throws IOException {
 
         final JFrame homeFrame = new JFrame("B.B.B - Main Menu");
 
@@ -20,7 +24,7 @@ public class Home {
 
         homeFrame.setSize(700, 300);
 
-        JPanel jComp1 = getMyAccount(library, a);
+        JPanel jComp1 = getMyAccount(a);
         pane.addTab("My Account", jComp1);
 
         pane.addTab("Book Search", new BookTable());
@@ -32,33 +36,37 @@ public class Home {
         homeFrame.setVisible(true);
     }
 
-    public JPanel getMyAccount( Library lib, Account a) {
+    public JPanel getMyAccount(Account a) throws IOException {
 
         JPanel frame = new JPanel();
         frame.setLayout(new BoxLayout(frame, BoxLayout.PAGE_AXIS));
 
         JLabel label = new JLabel("Account: " + a.getEmail());
 
-        final Profile profile = lib.getProfile(a);
+        final Profile[] profile = {library.getProfile(a)};
 
-        JLabel label2 = new JLabel("Rating: " + profile.getRating());
-        JLabel label3 = new JLabel((Icon) profile.getProfilePic());
+        JLabel label2 = new JLabel("Rating: " + profile[0].getRating());
+        JLabel label3;
+        if(profile[0].getInit()){
+            label3 = new JLabel((Icon) profile[0].getProfilePic());
+        }
+        else{
+            label3 = new JLabel();
+        }
         JButton newListingButton = new JButton("New Listing");
 
-        newListingButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e){
-                Profile p = lib.getProfile(a);
-                Listing l = p.newListing();
-                lib.addListing(l);
-            }
+        newListingButton.addActionListener(e -> {
+            profile[0] = library.getProfile(a);
+            Listing l = profile[0].newListing();
+            library.addListing(l);
         });
 
         JButton editProfileButton = new JButton("Edit Profile");
 
         editProfileButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e){
-                Profile p = lib.getProfile(a);
-                p.editProfile();
+                profile[0] = library.getProfile(a);
+                profile[0].editProfile();
             }
         });
 
@@ -67,14 +75,13 @@ public class Home {
         frame.add(label3);
         frame.add(newListingButton);
         frame.add(editProfileButton);
-        AccountListingTable alt = new AccountListingTable();
+        AccountListingTable alt = new AccountListingTable(library, profile[0]);
         frame.add(alt);
 
         return frame;
     }
 
 }
-
 
 class BookTable extends JPanel {
 
@@ -161,7 +168,7 @@ class BookTable extends JPanel {
      * the text box.
      */
     private void newAuthorFilter() {
-        RowFilter<MyTableModel, Object> rf = null;
+        RowFilter<MyTableModel, Object> rf;
         //If current expression doesn't parse, don't update.
         try {
             rf = RowFilter.regexFilter(filterSearchText.getText(), 0);
@@ -172,7 +179,7 @@ class BookTable extends JPanel {
     }
 
     private void newTitleFilter() {
-        RowFilter<MyTableModel, Object> rf = null;
+        RowFilter<MyTableModel, Object> rf;
         //If current expression doesn't parse, don't update.
         try {
             rf = RowFilter.regexFilter(filterSearchText.getText(), 1);
@@ -183,7 +190,7 @@ class BookTable extends JPanel {
     }
 
     private void newISBNFilter() {
-        RowFilter<MyTableModel, Object> rf = null;
+        RowFilter<MyTableModel, Object> rf;
         //If current expression doesn't parse, don't update.
         try {
             rf = RowFilter.regexFilter(filterSearchText.getText(), 2);
@@ -215,7 +222,7 @@ class BookTable extends JPanel {
                 e1.printStackTrace();
             }
 
-            String line = null;
+            String line;
             try {
                 int row = 0;
                 while (true) {
@@ -271,7 +278,6 @@ class BookTable extends JPanel {
 
     }
 }
-
 
 class SellerTable extends JPanel {
     private final JTextField filterAnimalText;
@@ -448,23 +454,26 @@ class SellerTable extends JPanel {
     }
 }
 
-
-
-
-
-
-
-
-
 class AccountListingTable extends JPanel {
     private boolean DEBUG = false;
+    Library library = null;
+    Profile profile = null;
 
-    public AccountListingTable() {
+    public AccountListingTable(Library library, Profile profile) throws IOException {
         super();
+
+        this.library = library;
+        this.profile = profile;
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        MyTableModel model = new MyTableModel();
-        TableRowSorter<MyTableModel> sorter = new TableRowSorter<MyTableModel>(model);
-        JTable table = new JTable(model);
+
+        String [] columns = {"Email", "Title", "Author", "ISBN", "Price", "Edition", "Condition", "Image"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns,0);
+
+        parseTable(tableModel,library,profile);
+
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        JTable table = new JTable(tableModel);
         table.setRowSorter(sorter);
         table.setPreferredScrollableViewportSize(new Dimension(500, 70));
         table.setFillsViewportHeight(true);
@@ -473,80 +482,14 @@ class AccountListingTable extends JPanel {
         JScrollPane scrollPane = new JScrollPane(table);
 
         add(scrollPane);
-
     }
 
+    public static void parseTable(DefaultTableModel table,Library library, Profile profile) throws IOException {
+        List<Listing> listingList = library.getListings(profile);
 
-    class MyTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"Author",
-                "Title", "ISBN", "Edition", "Price"};
-
-        private final Object[][] data;
-
-        MyTableModel() {
-            data = new Object[100][5];
-
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(new File("src/main/resources/listingRegistry.csv")));
-            } catch (FileNotFoundException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            String line;
-            try {
-                int row = 0;
-                while (true) {
-                    assert reader != null;
-                    if ((line = reader.readLine()) == null) break;
-                    String[] split = line.split(",");
-                    for (int col = 0; col <5; col++) {
-                        data[row][col] = split[col];
-                    }
-                    row++;
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
+        for(Listing l : listingList){
+            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+            table.addRow(row);
         }
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return data.length;
-        }
-
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
-
-        /*
-         * JTable uses this method to determine the default renderer/
-         * editor for each cell.  If we didn't implement this method,
-         * then the last column would contain text ("true"/"false"),
-         * rather than a check box.
-         */
-        public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
-        }
-
-
-        /*
-         * Don't need to implement this method unless your table's
-         * editable.
-         */
-        public boolean isCellEditable(int row, int col) {
-            return col >= 2;
-        }
-
     }
 }

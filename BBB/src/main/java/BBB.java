@@ -11,29 +11,8 @@ public class BBB {
 
         if (login.checkLogin()) {
             Account a = login.getAcc();
-            Home home = new Home();
-            home.getHome(library, a);
-
-           /* tests for editing profile and updating in library
-            p.editProfile();
-            library.updateProfile(p);
-
-*/
-
-
-            /* tests for adding listing, editing listing, and updating in library
-            Listing l = p.newListing();
-            library.addListing(l);
-
-            l.editListing();
-            library.updateListing(l);
-
-            List<Listing> listingList = library.getListings(p);
-            for(Listing temp : listingList){
-                System.out.println(temp.getTitle());
-            }
-            */
-
+            Home home = new Home(library);
+            home.getHome(a);
         }
     }
 }

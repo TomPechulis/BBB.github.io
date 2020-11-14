@@ -1,90 +1,98 @@
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.util.List;
 
 public class Home {
     Library library;
+    static Account currentUser;
 
     public Home(Library i){
         library = i;
     }
 
-    public void getHome(Account a) throws IOException {
+    public static Account currentUser() {
+        return currentUser;
+    }
 
-        final JFrame homeFrame = new JFrame("B.B.B - Main Menu");
+    public void getHome(Account currentAccount) throws IOException {
+        currentUser = currentAccount;
+
+        final JFrame frame = new JFrame("B.B.B - Main Menu");
 
         final JTabbedPane pane = new JTabbedPane();
 
-        homeFrame.setSize(700, 300);
+        frame.setSize(1000, 300);
+        frame.setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+        JPanel userPanel = new JPanel();
+        userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.PAGE_AXIS));
 
-        JLabel label = new JLabel("Account: " + a.getEmail());
+        JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
 
-        final Profile[] profile = {library.getProfile(a)};
+        final Profile[] profile = {library.getProfile(currentAccount)};
 
-        JLabel label2 = new JLabel("Rating: " + profile[0].getRating());
-        JLabel label3;
+        JLabel rank = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
+        JLabel picture;
         if(profile[0].getInit()){
-            label3 = new JLabel((Icon) profile[0].getProfilePic());
+            picture = new JLabel((Icon) profile[0].getProfilePic());
         }
         else{
-            label3 = new JLabel();
+            picture = new JLabel();
         }
         JButton newListingButton = new JButton("New Listing");
-        AccountListingTable alt = new AccountListingTable(library, profile[0]);
+        AccountListingTable alt = new AccountListingTable(library, profile[0],true);
 
         newListingButton.addActionListener(e -> {
-            profile[0] = library.getProfile(a);
-            JDialog dialog = new JDialog(homeFrame,true);
+            profile[0] = library.getProfile(currentAccount);
+            JDialog dialog = new JDialog(frame,true);
             dialog.setTitle("B.B.B - New Listing");
             Listing l = profile[0].newListing(dialog);
-
-
+            library.addListing(l);
+            alt.addRow(l);
         });
 
         JButton editProfileButton = new JButton("Edit Profile");
 
         editProfileButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e){
-                profile[0] = library.getProfile(a);
-                JDialog dialog = new JDialog(homeFrame,true);
+                profile[0] = library.getProfile(currentAccount);
+                JDialog dialog = new JDialog(frame,true);
                 dialog.setTitle("B.B.B - Edit Profile");
                 profile[0].editProfile(dialog);
 
                 try{
-                    library.updateProfile(profile[0]);
+                    library.updateLibrary();
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
             }
         });
 
-        panel.add(label);
-        panel.add(label2);
-        panel.add(label3);
-        panel.add(newListingButton);
-        panel.add(editProfileButton);
-        panel.add(alt);
+        userPanel.add(accountName);
+        userPanel.add(rank);
+        userPanel.add(picture);
+        userPanel.add(newListingButton);
+        userPanel.add(editProfileButton);
+        userPanel.add(alt);
 
-        pane.addTab("My Account", panel);
+        pane.addTab("My Account", userPanel);
 
         pane.addTab("Book Search", new BookTable(library));
 
-        pane.addTab("Seller Search", new SellerTable());
+        pane.addTab("Seller Search", new SellerTable(library));
 
-        homeFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        homeFrame.add(pane);
-        homeFrame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(pane);
+        frame.setVisible(true);
     }
 
 }
@@ -97,12 +105,21 @@ class BookTable extends JPanel {
     public BookTable(Library library) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        String [] columns = {"Email", "Title", "Author", "ISBN", "Price", "Edition", "Condition", "Image"};
+        String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image", "Purchase"};
         DefaultTableModel tableModel = new DefaultTableModel(columns,0);
 
         parseTable(tableModel,library);
 
         JTable table = new JTable(tableModel);
+
+        Action purchase = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int modelRow = Integer.valueOf(e.getActionCommand());
+            }
+        };
+        ButtonColumn purchaseButton = new ButtonColumn(table,null,8);
+
         sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
 
@@ -172,201 +189,223 @@ class BookTable extends JPanel {
 
     public static void parseTable(DefaultTableModel table,Library library) throws IOException {
         List<Listing> listingList = library.getListingRegistry();
+        Account currentUser = Home.currentUser();
 
         for(Listing l : listingList){
-            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+            if(l.getSeller().equals(currentUser.getEmail())){
+                continue;
+            }
+            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(),"", "Purchase"};
             table.addRow(row);
         }
     }
 }
 
 class SellerTable extends JPanel {
-    private final JTextField filterAnimalText;
-    private final JTextField filterIdText;
-    private final TableRowSorter<MyTableModel> sorter;
+    private final JTextField seller;
+    private final TableRowSorter<TableModel> sorter;
 
-    public SellerTable() {
+    public SellerTable(Library library) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        MyTableModel model = new MyTableModel();
-        sorter = new TableRowSorter<MyTableModel>(model);
-        JTable table = new JTable(model);
+
+        String [] columns = {"Seller","Rank", "Visit"};
+        DefaultTableModel tableModel = new DefaultTableModel(columns,0);
+        JTable table = new JTable(tableModel);
+
+        parseTable(tableModel,library);
+
+        Action visit = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String email = (String) tableModel.getValueAt(Integer.valueOf(e.getActionCommand()),0);
+                    Account visiting = library.findAccount(email);
+
+                    final JFrame frame = new JFrame("B.B.B - " + visiting.getEmail());
+                    frame.setSize(1000, 300);
+                    frame.setLocationRelativeTo(null);
+
+                    final JTabbedPane pane = new JTabbedPane();
+                    AccountListingTable alt = new AccountListingTable(library,library.getProfile(visiting),false);
+
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+
+                    JLabel accountName = new JLabel("Account: " + visiting.getEmail());
+
+                    final Profile[] profile = {library.getProfile(visiting)};
+
+                    JLabel rating = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
+                    JLabel picture;
+                    if(profile[0].getInit()){
+                        picture = new JLabel((Icon) profile[0].getProfilePic());
+                    }
+                    else{
+                        picture = new JLabel();
+                    }
+
+                    JButton rateSeller = new JButton("Rate Seller");
+
+                    rateSeller.addActionListener(x -> {
+                        JDialog dialog = new JDialog(frame,true);
+                        dialog.setTitle("B.B.B - New Listing");
+
+                        final JPanel rankPanel = new JPanel(new GridLayout(2,2));
+
+                        dialog.setSize(300,100);
+                        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                        dialog.setLocationRelativeTo(null);
+
+                        dialog.addWindowListener(new WindowAdapter()
+                        {
+                            public void windowClosing(WindowEvent e)
+                            {
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            }
+                        });
+
+                        final JLabel rankLabel = new JLabel("Rank (0 - 5):");
+                        final JTextField rank = new JTextField();
+
+                        rankPanel.add(rankLabel);
+                        rankPanel.add(rank);
+
+                        final JButton submit = new JButton("Rank Seller");
+                        submit.addActionListener(new AbstractAction() {
+                            public void actionPerformed(ActionEvent e) {
+                                if(Double.parseDouble(rank.getText()) < 0 || Double.parseDouble(rank.getText()) > 5){
+                                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
+                                            " may be be above or below the bounds.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                                }
+                                if(rank.getText().equals("")){
+                                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
+                                            " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                                }
+                                else{
+                                    library.getProfile(visiting).rankUser(Double.parseDouble(rank.getText()));
+
+                                    try {
+                                        library.updateLibrary();
+                                        parseTable(tableModel,library);
+                                    } catch (IOException ioException) {
+                                        ioException.printStackTrace();
+                                    }
+
+                                    rating.setText("Rank: " + profile[0].getRating() / profile[0].getRaters());
+                                    dialog.setVisible(false);
+                                    dialog.dispose();
+                                }
+                            }
+                        });
+                        rankPanel.add(submit);
+
+                        final JButton cancel = new JButton("Cancel");
+                        cancel.addActionListener(new AbstractAction() {
+                            public void actionPerformed(ActionEvent e) {
+                                int result = JOptionPane.showConfirmDialog(frame,"Sure? You want to exit?"
+                                        , "BBB - Rank Seller",
+                                        JOptionPane.YES_NO_OPTION,
+                                        JOptionPane.QUESTION_MESSAGE);
+                                if(result == JOptionPane.YES_OPTION){
+                                    dialog.setVisible(false);
+                                    dialog.dispose();
+                                }
+                            }
+                        });
+                        rankPanel.add(cancel);
+
+                        dialog.add(rankPanel, BorderLayout.CENTER);
+                        dialog.setVisible(true);
+                    });
+
+                    panel.add(accountName);
+                    panel.add(rating);
+                    panel.add(picture);
+                    panel.add(rateSeller);
+                    panel.add(alt);
+
+                    pane.addTab("Seller Account", panel);
+
+                    frame.add(pane);
+                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    frame.setVisible(true);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            }
+        };
+        ButtonColumn visitButton = new ButtonColumn(table,visit,2);
+
+        sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
-        table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-        table.setFillsViewportHeight(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JScrollPane scrollPane = new JScrollPane(table);
 
-        JPanel form = new JPanel();
-        JLabel l1 = new JLabel("Seller:", SwingConstants.TRAILING);
+        JPanel searchBar = new JPanel();
+        JLabel searchLabel = new JLabel("Seller:", SwingConstants.TRAILING);
 
-        form.add(l1);
-        filterAnimalText = new JTextField(10);
+        searchBar.add(searchLabel);
+        seller = new JTextField(10);
 
         //Whenever filterText changes, invoke newFilter.
-        filterAnimalText.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        newSellerFilter();
-                    }
-
-                    public void insertUpdate(DocumentEvent e) {
-                        newSellerFilter();
-                    }
-
-                    public void removeUpdate(DocumentEvent e) {
-                        newSellerFilter();
-                    }
-                });
-        l1.setLabelFor(filterAnimalText);
-        form.add(filterAnimalText);
-        JLabel l2 = new JLabel("Rating:", SwingConstants.TRAILING);
-        form.add(l2);
-        filterIdText = new JTextField(10);
-        filterIdText.getDocument().addDocumentListener(
-                new DocumentListener() {
-                    public void changedUpdate(DocumentEvent e) {
-                        newRatingFilter();
-                    }
-
-                    @Override
-                    public void insertUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newRatingFilter();
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent e) {
-                        // TODO Auto-generated method stub
-                        newRatingFilter();
-                    }
+        seller.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                search(seller.getText());
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                search(seller.getText());
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                search(seller.getText());
+            }
+            public void search(String str) {
+                if (str.length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter(str,1));
                 }
+            }
+        });
 
-        );
-        form.add(filterIdText);
-        add(form);
-
+        searchBar.add(seller);
+        add(searchBar);
         add(scrollPane);
     }
 
-    /**
-     * Update the row filter regular expression from the expression in
-     * the text box.
-     */
-    private void newSellerFilter() {
-        RowFilter<MyTableModel, Object> rf = null;
-        //If current expression doesn't parse, don't update.
-        try {
-            rf = RowFilter.regexFilter(filterAnimalText.getText(), 0);
-        } catch (java.util.regex.PatternSyntaxException e) {
-            return;
+    public static void parseTable(DefaultTableModel table,Library library) throws IOException {
+        List<Profile> profileList = library.getProfileRegistry();
+        Account currentUser = Home.currentUser();
+
+        for(int i = 0; i < table.getRowCount(); i++){
+            table.removeRow(i);
         }
-        sorter.setRowFilter(rf);
-    }
 
-    private void newRatingFilter() {
-        RowFilter<MyTableModel, Object> rf = null;
-        //If current expression doesn't parse, don't update.
-        try {
-            rf = RowFilter.regexFilter(filterIdText.getText(), 1);
-        } catch (java.util.regex.PatternSyntaxException e) {
-            return;
-        }
-        sorter.setRowFilter(rf);
-    }
-
-    class MyTableModel extends AbstractTableModel {
-        private final String[] columnNames = {"Sellers",
-                "Rating"};
-
-        private final Object[][] data;
-
-        MyTableModel() {
-            data = new Object[100][2];
-
-            BufferedReader reader = null;
-            try {
-                reader = new BufferedReader(new FileReader(new File("src/main/resources/profileRegistry.csv")));
-            } catch (FileNotFoundException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
+        for(Profile p : profileList){
+            if(p.getAccount().equals(currentUser)){
+                continue;
             }
-
-            String line = null;
-            try {
-                int row = 0;
-                while (true) {
-                    assert reader != null;
-                    if ((line = reader.readLine()) == null) break;
-                    String[] split = line.split(",");
-                    for (int col = 0; col < 2; col++) {
-                        data[row][col] = split[col];
-                    }
-                    row++;
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            String [] row = {p.getAccount().getEmail(),String.valueOf(p.getRating() / p.getRaters()),"Visit"};
+            table.addRow(row);
         }
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return data.length;
-        }
-
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
-
-        /*
-         * JTable uses this method to determine the default renderer/
-         * editor for each cell.  If we didn't implement this method,
-         * then the last column would contain text ("true"/"false"),
-         * rather than a check box.
-         */
-        public Class getColumnClass(int c) {
-            return getValueAt(0, c).getClass();
-        }
-
-
-        /*
-         * Don't need to implement this method unless your table's
-         * editable.
-         */
-        public boolean isCellEditable(int row, int col) {
-            //Note that the data/cell address is constant,
-            //no matter where the cell appears onscreen.
-            if (col < 2) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
     }
 }
 
 class AccountListingTable extends JPanel {
-    private boolean DEBUG = false;
-    Library library = null;
-    Profile profile = null;
-    DefaultTableModel tableModel = null;
+    Library library;
+    Profile profile;
+    DefaultTableModel tableModel;
 
     public void addRow(Listing l){
         String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
         tableModel.addRow(row);
     }
 
-    public AccountListingTable(Library library, Profile profile) throws IOException {
+    public AccountListingTable(Library library, Profile profile, boolean isOwner) throws IOException {
         super();
 
         this.library = library;
@@ -374,28 +413,87 @@ class AccountListingTable extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image"};
-        tableModel = new DefaultTableModel(columns,0);
+        if(isOwner){
+            String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image","Edit"};
+            tableModel = new DefaultTableModel(columns,0);
 
-        parseTable(tableModel,library,profile);
+            parseTable(tableModel,library,profile, true);
 
-        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
-        JTable table = new JTable(tableModel);
-        table.setRowSorter(sorter);
-        table.setPreferredScrollableViewportSize(new Dimension(500, 70));
-        table.setFillsViewportHeight(true);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+            JTable table = new JTable(tableModel);
 
-        JScrollPane scrollPane = new JScrollPane(table);
+            JFrame thisFrame = (JFrame) this.getParent();
 
-        add(scrollPane);
+            Action editListing = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JDialog dialog = new JDialog(thisFrame,true);
+                    dialog.setTitle("B.B.B - Edit Listing");
+                    int modelRow = Integer.parseInt(e.getActionCommand());
+                    Listing listing = profile.getListingList().get(modelRow);
+                    Listing newListing = profile.editListing(dialog,listing);
+
+                    listing.setAuthor(newListing.getAuthor());
+                    listing.setTitle(newListing.getTitle());
+                    listing.setPrice(newListing.getPrice());
+                    listing.setCondition(newListing.getCondition());
+                    listing.setEdition(newListing.getEdition());
+                    listing.setImage(newListing.getImage());
+                    listing.setIsbn(newListing.getIsbn());
+
+                    try {
+                        library.updateLibrary();
+                        parseTable(tableModel,library,profile, true);
+                    } catch (IOException ioException) {
+                        ioException.printStackTrace();
+                    }
+                }
+            };
+            ButtonColumn editListingButton = new ButtonColumn(table,editListing,8);
+
+            table.setRowSorter(sorter);
+            table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+            table.setFillsViewportHeight(true);
+            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            add(scrollPane);
+        }
+        else{
+            String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image"};
+            tableModel = new DefaultTableModel(columns,0);
+
+            parseTable(tableModel,library,profile,false);
+
+            TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+            JTable table = new JTable(tableModel);
+            table.setRowSorter(sorter);
+            table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+            table.setFillsViewportHeight(true);
+            table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            JScrollPane scrollPane = new JScrollPane(table);
+
+            add(scrollPane);
+        }
     }
 
-    public static void parseTable(DefaultTableModel table,Library library, Profile profile) throws IOException {
+    public static void parseTable(DefaultTableModel table,Library library, Profile profile, boolean isOwner) throws IOException {
         List<Listing> listingList = library.getListings(profile);
 
+        for(int i = 0; i < table.getRowCount(); i++){
+            table.removeRow(i);
+        }
+
         for(Listing l : listingList){
-            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), l.getIsbn(),String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+            String[] row;
+            if(isOwner){
+                row = new String[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), "", "Edit"};
+            }
+            else{
+                row = new String[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), ""};
+            }
             table.addRow(row);
         }
     }

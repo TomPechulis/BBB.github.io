@@ -9,17 +9,19 @@ import java.util.List;
 
 public class Profile {
     private double rating;
+    private int raters;
     private Image profilePic;
     private List<Listing> listingList;
-    private Account acc;
+    private Account account;
     private boolean init = false;
 
     Profile(){
     }
 
-    Profile(Account a, double r, Image p, List<Listing> l){
-        this.acc = a;
-        this.rating = r;
+    Profile(Account account, double rating, int raters, Image p, List<Listing> l){
+        this.account = account;
+        this.rating = rating;
+        this.raters = raters;
         this.profilePic = p;
         this.listingList = l;
     }
@@ -29,6 +31,17 @@ public class Profile {
     }
     public void setRating(double rating) {
         this.rating = rating;
+    }
+    public void rankUser(double rating) {
+        this.rating += rating;
+        raters++;
+    }
+
+    public int getRaters() {
+        return raters;
+    }
+    public void setRaters(int raters) {
+        this.raters = raters;
     }
 
     public Image getProfilePic() {
@@ -52,11 +65,11 @@ public class Profile {
         this.listingList = listingList;
     }
 
-    public void setAcc(Account b){
-        this.acc = b;
+    public void setAccount(Account b){
+        this.account = b;
     }
-    public Account getAcc(){
-        return this.acc;
+    public Account getAccount(){
+        return this.account;
     }
 
     public void editProfile(JDialog dialog){
@@ -113,9 +126,9 @@ public class Profile {
                     }
                 }
                 if(!password.getText().isEmpty()){
-                    Account a = getAcc();
+                    Account a = getAccount();
                     a.setPassword(password.getText());
-                    setAcc(a);
+                    setAccount(a);
                 }
                 dialog.setVisible(false);
                 dialog.dispose();
@@ -211,7 +224,125 @@ public class Profile {
                     l1[0].setIsbn(isbn.getText());
                     l1[0].setPrice(Double.parseDouble(price.getText()));
 
-                    l1[0].setSeller(getAcc().getEmail());
+                    l1[0].setSeller(getAccount().getEmail());
+
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
+                else{
+                    JOptionPane.showMessageDialog(null,"Error: One or more empty fields"
+                            , "B.B.B - Listing", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                createWindow(dialog);
+            }
+        });
+
+        listingPanel.add(titleLabel);
+        listingPanel.add(title);
+        listingPanel.add(authorLabel);
+        listingPanel.add(author);
+        listingPanel.add(isbnLabel);
+        listingPanel.add(isbn);
+        listingPanel.add(priceLabel);
+        listingPanel.add(price);
+        listingPanel.add(editionLabel);
+        listingPanel.add(edition);
+        listingPanel.add(conditionLabel);
+        listingPanel.add(condition);
+        listingPanel.add(imageLabel);
+        listingPanel.add(upload);
+
+        listingPanel.add(saveButton);
+        listingPanel.add(cancelButton);
+
+        dialog.add(listingPanel, BorderLayout.CENTER);
+        dialog.setVisible(true);
+
+        return l1[0];
+    }
+
+    public Listing editListing(JDialog dialog,Listing l){
+        final JPanel listingPanel = new JPanel(new GridLayout(8,1));
+
+        dialog.setSize(600,400);
+        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        dialog.addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                dialog.setVisible(false);
+                dialog.dispose();
+            }
+        });
+
+        final JLabel titleLabel = new JLabel("Title:");
+        final JTextField title = new JTextField(l.getTitle());
+        final JLabel authorLabel = new JLabel("Author:");
+        final JTextField author = new JTextField(l.getAuthor());
+        final JLabel isbnLabel = new JLabel("ISBN:");
+        final JTextField isbn = new JTextField(l.getIsbn());
+        final JLabel priceLabel = new JLabel("Price:");
+        final JTextField price = new JTextField(String.valueOf(l.getPrice()));
+        final JLabel editionLabel = new JLabel("Edition:");
+        final JTextField edition = new JTextField(l.getEdition());
+        final JLabel conditionLabel = new JLabel("Condition:");
+        final JTextField condition = new JTextField(l.getCondition());
+
+        final JLabel imageLabel = new JLabel("Upload Image:");
+        final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
+        final Image[] i = {l.getImage()};
+        final boolean[] clickImage = {false};
+        upload.addActionListener(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+                File selectedFile = null;
+                int returnValue = jfc.showOpenDialog(null);
+
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                    selectedFile = jfc.getSelectedFile();
+
+                }
+
+                assert selectedFile != null;
+                i[0] = new Image(selectedFile);
+
+                clickImage[0] = true;
+            }
+        });
+        final Listing[] l1 = {null};
+
+        JButton saveButton = new JButton("Save Changes");
+        saveButton.addActionListener(new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                l1[0] = new Listing();
+                if(!title.getText().isEmpty() && !author.getText().isEmpty() && !isbn.getText().isEmpty()
+                        && !price.getText().isEmpty() && !edition.getText().isEmpty() && !condition.getText().isEmpty()) {
+
+                    boolean check = i[0].verifyImage();
+                    if (check) {
+                        l1[0].setImage(i[0]);
+                    }
+                    else{
+                        clickImage[0] = false;
+                        JOptionPane.showMessageDialog(null,"Error: Image Invalid",
+                                "B.B.B - Listing", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    l1[0].setTitle(title.getText());
+                    l1[0].setAuthor(author.getText());
+                    l1[0].setCondition(condition.getText());
+                    l1[0].setEdition(edition.getText());
+                    l1[0].setIsbn(isbn.getText());
+                    l1[0].setPrice(Double.parseDouble(price.getText()));
+
+                    l1[0].setSeller(getAccount().getEmail());
 
                     dialog.setVisible(false);
                     dialog.dispose();

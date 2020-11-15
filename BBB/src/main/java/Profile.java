@@ -6,6 +6,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class Profile {
     private double rating;
@@ -73,16 +74,20 @@ public class Profile {
     }
 
     public void editProfile(JDialog dialog){
-        final JPanel loginPanel = new JPanel(new GridLayout(3,1));
+        final JPanel loginPanel = new JPanel(new GridLayout(4,2));
 
         dialog.setSize(600,150);
         dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         final JLabel passwordLabel = new JLabel("New Password:");
         final JTextField password = new JTextField();
+        final JLabel confirmPasswordLabel = new JLabel("Confirm Passowrd");
+        final JTextField confirmPassword = new JTextField();
 
         loginPanel.add(passwordLabel);
         loginPanel.add(password);
+        loginPanel.add(confirmPasswordLabel);
+        loginPanel.add(confirmPassword);
 
         final JLabel imageLabel = new JLabel("Upload Image:");
         final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
@@ -125,10 +130,30 @@ public class Profile {
                                 "B.B.B - Listing", JOptionPane.ERROR_MESSAGE);
                     }
                 }
-                if(!password.getText().isEmpty()){
+                Pattern textPattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$");
+
+                if(password.getText().equals("") || confirmPassword.getText().equals("")){
+                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
+                            " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                }
+                else if(password.getText().length() < 8){
+                    JOptionPane.showMessageDialog(null,"Error: The password is less" +
+                            " than 8 characters", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                }
+                else if(!password.getText().equals(confirmPassword.getText())){
+                    JOptionPane.showMessageDialog(null,"Error: The two passwords" +
+                            " do not match", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                }
+                else if(!textPattern.matcher(password.getText()).matches()){
+                    JOptionPane.showMessageDialog(null,"Error: The password must have" +
+                            " an upper and lower case character" +
+                            " and one digit", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                }else{
                     Account a = getAccount();
                     a.setPassword(password.getText());
                     setAccount(a);
+                    JOptionPane.showMessageDialog(null,"Notice: Profile" +
+                            " has been updated", "", JOptionPane.PLAIN_MESSAGE);
                 }
                 dialog.setVisible(false);
                 dialog.dispose();

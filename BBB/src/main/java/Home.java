@@ -1,3 +1,4 @@
+import javax.sound.midi.SysexMessage;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+
+import java.awt.Image;
 import java.util.List;
 
 public class Home {
@@ -30,15 +33,23 @@ public class Home {
 
         final JTabbedPane pane = new JTabbedPane();
 
-        frame.setSize(1000, 300);
+        frame.setSize(1200, 600);
         frame.setLocationRelativeTo(null);
 
         JPanel userPanel = new JPanel();
         userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.PAGE_AXIS));
+        final Profile[] profile = {library.getProfile(currentAccount)};
+        ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
+
+        Image image = imageIcon.getImage(); // transform it
+        Image newimg = image.getScaledInstance(90, 90,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+        imageIcon = new ImageIcon(newimg);  // transform it back
+
+        userPanel.add(new JLabel(imageIcon));
 
         JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
 
-        final Profile[] profile = {library.getProfile(currentAccount)};
+
 
         JLabel rank = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
         JLabel picture;
@@ -105,12 +116,19 @@ class BookTable extends JPanel {
     public BookTable(Library library) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image", "Purchase"};
+        String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Picture", "Purchase"};
         DefaultTableModel tableModel = new DefaultTableModel(columns,0);
 
         parseTable(tableModel,library);
 
-        JTable table = new JTable(tableModel);
+        JTable table = new JTable(tableModel)   {
+            //  Returning the Class of each column will allow different
+            //  renderers to be used based on Class
+            public Class getColumnClass(int column)
+            {
+                return getValueAt(0, column).getClass();
+            }
+        };
 
         Action purchase = new AbstractAction() {
             @Override
@@ -181,7 +199,7 @@ class BookTable extends JPanel {
         });
         l1.setLabelFor(filterSearchText);
         form.add(filterSearchText);
-
+        table.setRowHeight(table.getRowHeight() + 50);
         add(form);
 
         add(scrollPane);
@@ -195,7 +213,10 @@ class BookTable extends JPanel {
             if(l.getSeller().equals(currentUser.getEmail())){
                 continue;
             }
-            String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(),"", "Purchase"};
+            ImageIcon ic = new ImageIcon(l.getImage().getPath().getAbsolutePath());
+            Image img = ic.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+            ic = new ImageIcon(img);
+            Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(), ic , "Purchase"};
             table.addRow(row);
         }
     }
@@ -401,7 +422,7 @@ class AccountListingTable extends JPanel {
     DefaultTableModel tableModel;
 
     public void addRow(Listing l){
-        String [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(),""};
+        Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath())};
         tableModel.addRow(row);
     }
 
@@ -420,7 +441,14 @@ class AccountListingTable extends JPanel {
             parseTable(tableModel,library,profile, true);
 
             TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
-            JTable table = new JTable(tableModel);
+            JTable table = new JTable(tableModel)        {
+                //  Returning the Class of each column will allow different
+                //  renderers to be used based on Class
+                public Class getColumnClass(int column)
+                {
+                    return getValueAt(0, column).getClass();
+                }
+            };
 
             JFrame thisFrame = (JFrame) this.getParent();
 
@@ -455,7 +483,7 @@ class AccountListingTable extends JPanel {
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);
             table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+            table.setRowHeight(table.getRowHeight() + 50);
             JScrollPane scrollPane = new JScrollPane(table);
 
             add(scrollPane);
@@ -472,7 +500,7 @@ class AccountListingTable extends JPanel {
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);
             table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+            table.setRowHeight(table.getRowHeight() + 50);
             JScrollPane scrollPane = new JScrollPane(table);
 
             add(scrollPane);
@@ -487,12 +515,16 @@ class AccountListingTable extends JPanel {
         }
 
         for(Listing l : listingList){
-            String[] row;
+            Object[] row;
+            ImageIcon ic = new ImageIcon(l.getImage().getPath().getAbsolutePath());
+            Image img = ic.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+            ic = new ImageIcon(img);
             if(isOwner){
-                row = new String[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), "", "Edit"};
+
+                row = new Object[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), ic, "Edit"};
             }
             else{
-                row = new String[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), ""};
+                row = new Object[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(),ic};
             }
             table.addRow(row);
         }

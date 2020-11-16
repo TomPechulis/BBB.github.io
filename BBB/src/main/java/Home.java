@@ -40,19 +40,19 @@ public class Home {
         userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.PAGE_AXIS));
         final Profile[] profile = {library.getProfile(currentAccount)};
 
-        if(!profile[0].getProfilePic().getPath().getAbsolutePath().equals("null")) {
-            ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
+        if(profile[0] != null){
+            if(!profile[0].getProfilePic().getPath().getAbsolutePath().equals("null")) {
+                ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
 
-            Image image = imageIcon.getImage(); // transform it
-            Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
-            imageIcon = new ImageIcon(newimg);  // transform it back
+                Image image = imageIcon.getImage(); // transform it
+                Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+                imageIcon = new ImageIcon(newimg);  // transform it back
 
-            userPanel.add(new JLabel(imageIcon));
+                userPanel.add(new JLabel(imageIcon));
+            }
         }
 
         JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
-
-
 
         JLabel rank = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
         JLabel picture;
@@ -435,7 +435,7 @@ class AccountListingTable extends JPanel {
     DefaultTableModel tableModel;
 
     public void addRow(Listing l){
-        Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath())};
+        Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath()), "Edit"};
         tableModel.addRow(row);
     }
 
@@ -454,11 +454,10 @@ class AccountListingTable extends JPanel {
             parseTable(tableModel,library,profile, true);
 
             TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
-            JTable table = new JTable(tableModel)        {
+            JTable table = new JTable(tableModel)      {
                 //  Returning the Class of each column will allow different
                 //  renderers to be used based on Class
-                public Class getColumnClass(int column)
-                {
+                public Class getColumnClass(int column) {
                     return getValueAt(0, column).getClass();
                 }
             };
@@ -474,19 +473,21 @@ class AccountListingTable extends JPanel {
                     Listing listing = profile.getListingList().get(modelRow);
                     Listing newListing = profile.editListing(dialog,listing);
 
-                    listing.setAuthor(newListing.getAuthor());
-                    listing.setTitle(newListing.getTitle());
-                    listing.setPrice(newListing.getPrice());
-                    listing.setCondition(newListing.getCondition());
-                    listing.setEdition(newListing.getEdition());
-                    listing.setImage(newListing.getImage());
-                    listing.setIsbn(newListing.getIsbn());
+                    if(newListing != null){
+                        listing.setAuthor(newListing.getAuthor());
+                        listing.setTitle(newListing.getTitle());
+                        listing.setPrice(newListing.getPrice());
+                        listing.setCondition(newListing.getCondition());
+                        listing.setEdition(newListing.getEdition());
+                        listing.setImage(newListing.getImage());
+                        listing.setIsbn(newListing.getIsbn());
 
-                    try {
-                        library.updateLibrary();
-                        parseTable(tableModel,library,profile, true);
-                    } catch (IOException ioException) {
-                        ioException.printStackTrace();
+                        try {
+                            library.updateLibrary();
+                            parseTable(tableModel,library,profile, true);
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        }
                     }
                 }
             };

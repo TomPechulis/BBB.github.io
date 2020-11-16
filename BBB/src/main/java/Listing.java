@@ -23,12 +23,12 @@ public class Listing {
                 price.equals(listing.price) &&
                 edition.equals(listing.edition) &&
                 condition.equals(listing.condition) &&
-                image.equals(listing.image);
+                imageCustom.equals(listing.imageCustom);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(author, title, seller, isbn, price, edition, condition, image);
+        return Objects.hash(author, title, seller, isbn, price, edition, condition, imageCustom);
     }
 
     private Double price;
@@ -50,16 +50,16 @@ public class Listing {
         this.condition = condition;
     }
 
-    public Image getImage() {
-        return image;
+    public ImageCustom getImage() {
+        return imageCustom;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public void setImage(ImageCustom imageCustom) {
+        this.imageCustom = imageCustom;
     }
 
     private String condition;
-    private Image image;
+    private ImageCustom imageCustom;
 
     public String getAuthor() {
         return author;
@@ -104,14 +104,14 @@ public class Listing {
     public Listing(){
     }
     public Listing(String seller, String title, String author, String isbn, Double price, String edition, String condition,
-                   Image image){
+                   ImageCustom imageCustom){
         this.title = title;
         this.author = author;
         this.isbn = isbn;
         this.price = price;
         this.edition = edition;
         this.condition = condition;
-        this.image = image;
+        this.imageCustom = imageCustom;
 
         this.seller = seller;
 
@@ -140,7 +140,7 @@ public class Listing {
 
         final JLabel imageLabel = new JLabel("Upload Image:");
         final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
-        final Image[] i = {null};
+        final ImageCustom[] i = {null};
         final boolean[] clickImage = {false};
         upload.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -153,7 +153,7 @@ public class Listing {
 
                 }
                 assert selectedFile != null;
-                i[0] = new Image(selectedFile);
+                i[0] = new ImageCustom(selectedFile);
 
                 clickImage[0] = true;
             }

@@ -33,19 +33,22 @@ public class Home {
 
         final JTabbedPane pane = new JTabbedPane();
 
-        frame.setSize(1200, 600);
+        frame.setSize(1500, 600);
         frame.setLocationRelativeTo(null);
 
         JPanel userPanel = new JPanel();
         userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.PAGE_AXIS));
         final Profile[] profile = {library.getProfile(currentAccount)};
-        ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
 
-        Image image = imageIcon.getImage(); // transform it
-        Image newimg = image.getScaledInstance(90, 90,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
-        imageIcon = new ImageIcon(newimg);  // transform it back
+        if(!profile[0].getProfilePic().getPath().getAbsolutePath().equals("null")) {
+            ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
 
-        userPanel.add(new JLabel(imageIcon));
+            Image image = imageIcon.getImage(); // transform it
+            Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+            imageIcon = new ImageIcon(newimg);  // transform it back
+
+            userPanel.add(new JLabel(imageIcon));
+        }
 
         JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
 
@@ -97,7 +100,7 @@ public class Home {
 
         pane.addTab("My Account", userPanel);
 
-        pane.addTab("Book Search", new BookTable(library));
+        pane.addTab("Book Search", new BookTable(library, profile[0]));
 
         pane.addTab("Seller Search", new SellerTable(library));
 
@@ -113,7 +116,7 @@ class BookTable extends JPanel {
     private final JTextField filterSearchText;
     private final TableRowSorter<TableModel> sorter;
 
-    public BookTable(Library library) throws IOException {
+    public BookTable(Library library, Profile prof) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Picture", "Purchase"};
@@ -134,9 +137,19 @@ class BookTable extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int modelRow = Integer.valueOf(e.getActionCommand());
+
+                ImageCustom i = new ImageCustom(new File(table.getValueAt(modelRow,7).toString()));
+
+                Listing temp = new Listing(table.getValueAt(modelRow,0).toString(),table.getValueAt(modelRow,1).toString(),
+                                           table.getValueAt(modelRow,2).toString(),table.getValueAt(modelRow,4).toString(),
+                                           Double.parseDouble(table.getValueAt(modelRow,3).toString()),table.getValueAt(modelRow,5).toString(),
+                                           table.getValueAt(modelRow,6).toString(),i);
+
+                Purchase p = new Purchase(table.getValueAt(modelRow,0).toString(), prof.getAccount().getEmail(), temp);
+                p.purchaseEmail();
             }
         };
-        ButtonColumn purchaseButton = new ButtonColumn(table,null,8);
+        ButtonColumn purchaseButton = new ButtonColumn(table,purchase,8);
 
         sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);

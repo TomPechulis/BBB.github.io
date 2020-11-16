@@ -153,11 +153,11 @@ public class Library {
         writer = new PrintWriter(accountFile);
         writer.print("");
         writer.close();
-        for(Account a : accountRegistry){
+        for(Profile a : profileRegistry){
             FileWriter fr = new FileWriter(accountFile,true);
-            fr.append(a.getEmail());
+            fr.append(a.getAccount().getEmail());
             fr.append(",");
-            fr.append(a.getPassword());
+            fr.append(a.getAccount().getPassword());
             fr.append("\n");
 
             fr.flush();
@@ -217,7 +217,7 @@ public class Library {
             while ((listingLine = listingReader.readLine()) != null) {
                 //Get Email and Password
                 String [] data = listingLine.split(",");
-                Image temp = new Image(new File(data[7]));
+                ImageCustom temp = new ImageCustom(new File(data[7]));
                 Listing listing = new Listing(data[0],data[1],data[2],data[3],Double.parseDouble(data[4]),data[5],data[6],temp);
 
                 listingRegistry.add(listing);
@@ -235,8 +235,8 @@ public class Library {
                 //Get Email and Password
                 String [] data = profileLine.split(",");
                 Account a = new Account(data[0], data[1]);
-                File f = new File(data[2]);
-                Image i = new Image(f);
+                File f = new File(data[4]);
+                ImageCustom i = new ImageCustom(f);
                 List<Listing> listingList = new LinkedList<>();
 
                 for(Listing l : listingRegistry){

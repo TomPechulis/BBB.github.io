@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class Profile {
     private double rating;
     private int raters;
-    private Image profilePic;
+    private ImageCustom profilePic;
     private List<Listing> listingList;
     private Account account;
     private boolean init = false;
@@ -19,7 +19,7 @@ public class Profile {
     Profile(){
     }
 
-    Profile(Account account, double rating, int raters, Image p, List<Listing> l){
+    Profile(Account account, double rating, int raters, ImageCustom p, List<Listing> l){
         this.account = account;
         this.rating = rating;
         this.raters = raters;
@@ -45,10 +45,10 @@ public class Profile {
         this.raters = raters;
     }
 
-    public Image getProfilePic() {
+    public ImageCustom getProfilePic() {
         return profilePic;
     }
-    public void setProfilePic(Image i){
+    public void setProfilePic(ImageCustom i){
         profilePic = i;
     }
 
@@ -81,7 +81,7 @@ public class Profile {
 
         final JLabel passwordLabel = new JLabel("New Password:");
         final JTextField password = new JTextField();
-        final JLabel confirmPasswordLabel = new JLabel("Confirm Passowrd");
+        final JLabel confirmPasswordLabel = new JLabel("Confirm Password:");
         final JTextField confirmPassword = new JTextField();
 
         loginPanel.add(passwordLabel);
@@ -91,7 +91,7 @@ public class Profile {
 
         final JLabel imageLabel = new JLabel("Upload Image:");
         final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
-        final Image[] i = {null};
+        final ImageCustom[] i = {null};
         final boolean[] clickImage = {false};
         upload.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -105,7 +105,7 @@ public class Profile {
                 }
 
                 assert selectedFile != null;
-                i[0] = new Image(selectedFile);
+                i[0] = new ImageCustom(selectedFile);
 
                 clickImage[0] = true;
             }
@@ -133,8 +133,7 @@ public class Profile {
                 Pattern textPattern = Pattern.compile("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$");
 
                 if(password.getText().equals("") || confirmPassword.getText().equals("")){
-                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
-                            " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+
                 }
                 else if(password.getText().length() < 8){
                     JOptionPane.showMessageDialog(null,"Error: The password is less" +
@@ -204,7 +203,7 @@ public class Profile {
 
         final JLabel imageLabel = new JLabel("Upload Image:");
         final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
-        final Image[] i = {null};
+        final ImageCustom[] i = {null};
         final boolean[] clickImage = {false};
         upload.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -218,7 +217,7 @@ public class Profile {
                 }
 
                 assert selectedFile != null;
-                i[0] = new Image(selectedFile);
+                i[0] = new ImageCustom(selectedFile);
 
                 clickImage[0] = true;
             }
@@ -322,7 +321,7 @@ public class Profile {
 
         final JLabel imageLabel = new JLabel("Upload Image:");
         final JButton upload = new JButton("Choose File (PNG or JPG only, < 50 mb)");
-        final Image[] i = {l.getImage()};
+        final ImageCustom[] i = {l.getImage()};
         final boolean[] clickImage = {false};
         upload.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
@@ -336,7 +335,7 @@ public class Profile {
                 }
 
                 assert selectedFile != null;
-                i[0] = new Image(selectedFile);
+                i[0] = new ImageCustom(selectedFile);
 
                 clickImage[0] = true;
             }

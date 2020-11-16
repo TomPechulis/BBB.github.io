@@ -1,6 +1,6 @@
 import java.io.File;
 
-public class Image {
+public class ImageCustom {
     private String type = "zzz";
     private double size;
     private File path;
@@ -29,7 +29,7 @@ public class Image {
         this.path = path;
     }
 
-    Image(File p){
+    ImageCustom(File p){
         this.path = p;
 
         String temp = p.getAbsolutePath();

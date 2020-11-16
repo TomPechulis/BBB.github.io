@@ -137,16 +137,33 @@ class BookTable extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int modelRow = Integer.valueOf(e.getActionCommand());
+                JFrame frame = new JFrame("Confirm");
 
-                ImageCustom i = new ImageCustom(new File(table.getValueAt(modelRow,7).toString()));
+                JPanel panel = new JPanel();
+                LayoutManager layout = new FlowLayout();
+                panel.setLayout(layout);
+                int result = JOptionPane.showConfirmDialog(frame,"Are you sure?", "Confirm",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE);
+                if(result == JOptionPane.YES_OPTION) {
+                    ImageCustom i = new ImageCustom(new File(table.getValueAt(modelRow,7).toString()));
 
-                Listing temp = new Listing(table.getValueAt(modelRow,0).toString(),table.getValueAt(modelRow,1).toString(),
-                                           table.getValueAt(modelRow,2).toString(),table.getValueAt(modelRow,4).toString(),
-                                           Double.parseDouble(table.getValueAt(modelRow,3).toString()),table.getValueAt(modelRow,5).toString(),
-                                           table.getValueAt(modelRow,6).toString(),i);
+                    Listing temp = new Listing(table.getValueAt(modelRow,0).toString(),table.getValueAt(modelRow,1).toString(),
+                            table.getValueAt(modelRow,2).toString(),table.getValueAt(modelRow,4).toString(),
+                            Double.parseDouble(table.getValueAt(modelRow,3).toString()),table.getValueAt(modelRow,5).toString(),
+                            table.getValueAt(modelRow,6).toString(),i);
 
-                Purchase p = new Purchase(table.getValueAt(modelRow,0).toString(), prof.getAccount().getEmail(), temp);
-                p.purchaseEmail();
+                    Purchase p = new Purchase(table.getValueAt(modelRow,0).toString(), prof.getAccount().getEmail(), temp);
+                    p.purchaseEmail();
+                }
+                else if(result == JOptionPane.NO_OPTION){
+                    panel.setVisible(false);
+                }
+
+                frame.getContentPane().add(panel, BorderLayout.CENTER);
+                frame.setSize(560, 200);
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(false);
             }
         };
         ButtonColumn purchaseButton = new ButtonColumn(table,purchase,8);

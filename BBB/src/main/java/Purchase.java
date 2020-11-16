@@ -46,7 +46,7 @@ public class Purchase {
                             "Title: " + l.getTitle()+"\n"+"Author: " + l.getAuthor()+"\n"+"ISBN: " + l.getIsbn()+"\n"+
                             "Price: $" + l.getPrice()+"\n"+"Edition: " + l.getEdition()+"\n"+"Condition: " +
                             l.getCondition()+"\n\n"+"Here is the buyer's contact information to complete the transaction:\n"+
-                            sellerEmail);
+                            buyerEmail);
 
             // Send message
             Transport.send(message);

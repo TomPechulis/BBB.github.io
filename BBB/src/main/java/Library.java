@@ -254,4 +254,32 @@ public class Library {
         }
 
     }
+
+    public void exportListings() throws IOException {
+        PrintWriter writer = new PrintWriter(listingFile);
+        writer.print("");
+        writer.close();
+        for(Listing a : listingRegistry){
+            FileWriter fr = new FileWriter(listingFile,true);
+            fr.append(a.getSeller());
+            fr.append(",");
+            fr.append(a.getTitle());
+            fr.append(",");
+            fr.append(a.getAuthor());
+            fr.append(",");
+            fr.append(a.getIsbn());
+            fr.append(",");
+            fr.append(String.valueOf(a.getPrice()));
+            fr.append(",");
+            fr.append(a.getEdition());
+            fr.append(",");
+            fr.append(a.getCondition());
+            fr.append(",");
+            fr.append(a.getImage().getPath().getAbsolutePath());
+            fr.append("\n");
+
+            fr.flush();
+            fr.close();
+        }
+    }
 }

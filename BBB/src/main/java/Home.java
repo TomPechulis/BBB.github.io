@@ -40,16 +40,14 @@ public class Home {
         userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.PAGE_AXIS));
         final Profile[] profile = {library.getProfile(currentAccount)};
 
-        if(profile[0] != null){
-            if(!profile[0].getProfilePic().getPath().getAbsolutePath().equals("null")) {
-                ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
+        if(profile[0].getProfilePic() != null){
+            ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
 
-                Image image = imageIcon.getImage(); // transform it
-                Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
-                imageIcon = new ImageIcon(newimg);  // transform it back
+            Image image = imageIcon.getImage(); // transform it
+            Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+            imageIcon = new ImageIcon(newimg);  // transform it back
 
-                userPanel.add(new JLabel(imageIcon));
-            }
+            userPanel.add(new JLabel(imageIcon));
         }
 
         JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
@@ -70,6 +68,7 @@ public class Home {
             JDialog dialog = new JDialog(frame,true);
             dialog.setTitle("B.B.B - New Listing");
             Listing l = profile[0].newListing(dialog);
+            profile[0].getListingList().add(l);
             library.addListing(l);
             alt.addRow(l);
         });
@@ -452,7 +451,7 @@ class AccountListingTable extends JPanel {
     DefaultTableModel tableModel;
 
     public void addRow(Listing l){
-        Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath()), "Edit"};
+        Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath()), "Edit", "Delete"};
         tableModel.addRow(row);
     }
 
@@ -465,7 +464,7 @@ class AccountListingTable extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         if(isOwner){
-            String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image","Edit"};
+            String [] columns = {"Email", "Title", "Author", "Price", "ISBN", "Edition", "Condition", "Image","Edit", "Delete"};
             tableModel = new DefaultTableModel(columns,0);
 
             parseTable(tableModel,library,profile, true);
@@ -510,6 +509,31 @@ class AccountListingTable extends JPanel {
             };
             ButtonColumn editListingButton = new ButtonColumn(table,editListing,8);
 
+            Action deleteListing = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JDialog dialog = new JDialog(thisFrame,true);
+                    dialog.setTitle("B.B.B - Delete Listing");
+                    int modelRow = Integer.parseInt(e.getActionCommand());
+
+                    int result = JOptionPane.showConfirmDialog(dialog,"Are you sure?", "Confirm",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.QUESTION_MESSAGE);
+                    if(result == JOptionPane.YES_OPTION) {
+                        tableModel.removeRow(modelRow);
+                        Listing listing = profile.getListingList().get(modelRow);
+                        library.getListingRegistry().remove(listing);
+
+                        try {
+                            library.exportListings();
+                        } catch (IOException ioException) {
+                            ioException.printStackTrace();
+                        }
+                    }
+                }
+            };
+            ButtonColumn deleteListingButton = new ButtonColumn(table,deleteListing,9);
+
             table.setRowSorter(sorter);
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);
@@ -552,7 +576,7 @@ class AccountListingTable extends JPanel {
             ic = new ImageIcon(img);
             if(isOwner){
 
-                row = new Object[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), ic, "Edit"};
+                row = new Object[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(), ic, "Edit", "Delete"};
             }
             else{
                 row = new Object[]{l.getSeller(), l.getTitle(), l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(), l.getEdition(), l.getCondition(),ic};

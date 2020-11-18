@@ -564,7 +564,7 @@ class AccountListingTable extends JPanel {
                         listing.setIsbn(newListing.getIsbn());
 
                         try {
-                            library.updateLibrary();
+                            library.exportListings();
                             parseTable(tableModel,library,profile, true);
                         } catch (IOException ioException) {
                             ioException.printStackTrace();

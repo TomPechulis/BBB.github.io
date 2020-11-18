@@ -8,12 +8,21 @@ public class Purchase {
     private String buyerEmail;
     private Listing l;
 
+    /**
+     * Class constructor
+     * @param sellerEmail The email of the Listing seller
+     * @param buyerEmail The email of the Listing buyer (current user)
+     * @param l The listing being purchased
+     */
     Purchase(String sellerEmail, String buyerEmail, Listing l){
         this.sellerEmail = sellerEmail;
         this.buyerEmail = buyerEmail;
         this.l = l;
     }
 
+    /**
+     * Sends an email message to the seller with information on the buyer and listing
+     */
     public void purchaseEmail(){
         String to = sellerEmail;
         String from = "baylorblackmarketbookstore@gmail.com";
@@ -53,30 +62,4 @@ public class Purchase {
 
         }catch (MessagingException mex) {mex.printStackTrace();}
     }
-
-    public String getSellerEmail() {
-        return sellerEmail;
-    }
-
-    public void setSellerEmail(String sellerEmail) {
-        this.sellerEmail = sellerEmail;
-    }
-
-    public String getBuyerEmail() {
-        return buyerEmail;
-    }
-
-    public void setBuyerEmail(String buyerEmail) {
-        this.buyerEmail = buyerEmail;
-    }
-
-    public Listing getL() {
-        return l;
-    }
-
-    public void setL(Listing l) {
-        this.l = l;
-    }
-
-
 }

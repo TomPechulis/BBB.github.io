@@ -1,4 +1,3 @@
-import javax.sound.midi.SysexMessage;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -14,18 +13,38 @@ import java.io.*;
 import java.awt.Image;
 import java.util.List;
 
+/**
+ * The Home class contains the components that make up the main window the user sees after successfully logging in.
+ *
+ * @author  Tom Pechulis
+ * @version 1.3
+ * @since   2020-11-4
+ */
 public class Home {
     Library library;
     static Account currentUser;
 
+    /**
+     * Class constructor
+     * @param i The current instance of Library being used
+     */
     public Home(Library i){
         library = i;
     }
 
+    /**
+     * This method returns the currently logged in user
+     * @return Account Gets the user that is currently logged in
+     */
     public static Account currentUser() {
         return currentUser;
     }
 
+    /**
+     * The main window for the user, includes 3 tabs the user can interact with
+     * @param currentAccount The Account of the currently logged in user
+     * @throws IOException Thrown if library files cannot be updated
+     */
     public void getHome(Account currentAccount) throws IOException {
         currentUser = currentAccount;
 
@@ -33,7 +52,7 @@ public class Home {
 
         final JTabbedPane pane = new JTabbedPane();
 
-        frame.setSize(1500, 600);
+        frame.setSize(1750, 600);
         frame.setLocationRelativeTo(null);
 
         JPanel userPanel = new JPanel();
@@ -110,11 +129,24 @@ public class Home {
 
 }
 
+/**
+ * The BookTable class extends JPanel to create the tab showing all current listings, and allowing for searching and
+ * filtering of results.
+ *
+ * @author  Tom Pechulis
+ * @version 1.1
+ * @since   2020-11-4
+ */
 class BookTable extends JPanel {
 
     private final JTextField filterSearchText;
     private final TableRowSorter<TableModel> sorter;
 
+    /**
+     * This method initializes the BookTable and populates it with information
+     * @param library The Library instance containing the data needed to initialize
+     * @param prof The Profile of the current Account
+     */
     public BookTable(Library library, Profile prof) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -234,7 +266,12 @@ class BookTable extends JPanel {
         add(scrollPane);
     }
 
-    public static void parseTable(DefaultTableModel table,Library library) throws IOException {
+    /**
+     * This method is used to fill the BookTable with information and doesn't show the current user their own listings
+     * @param library The Library instance containing the data needed to initialize
+     * @param table The current state of the BookTable
+     */
+    public static void parseTable(DefaultTableModel table,Library library){
         List<Listing> listingList = library.getListingRegistry();
         Account currentUser = Home.currentUser();
 
@@ -251,10 +288,22 @@ class BookTable extends JPanel {
     }
 }
 
+/**
+ * The SellerTable class extends JPanel to create the tab showing all sellers and allowing to visit their page.
+ *
+ * @author  Tom Pechulis
+ * @version 1.1
+ * @since   2020-11-4
+ */
 class SellerTable extends JPanel {
     private final JTextField seller;
     private final TableRowSorter<TableModel> sorter;
 
+    /**
+     * This method is used to initialize the SellerTable with the information from the Library
+     * @param library The Library instance containing the data needed to initialize
+     * @throws IOException Thrown when information cannot be obtained from visited profile
+     */
     public SellerTable(Library library) throws IOException {
         super();
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -268,122 +317,118 @@ class SellerTable extends JPanel {
         Action visit = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    String email = (String) tableModel.getValueAt(Integer.valueOf(e.getActionCommand()),0);
-                    Account visiting = library.findAccount(email);
+                String email = (String) tableModel.getValueAt(Integer.valueOf(e.getActionCommand()),0);
+                Account visiting = library.findAccount(email);
 
-                    final JFrame frame = new JFrame("B.B.B - " + visiting.getEmail());
-                    frame.setSize(1000, 300);
-                    frame.setLocationRelativeTo(null);
+                final JFrame frame = new JFrame("B.B.B - " + visiting.getEmail());
+                frame.setSize(1000, 300);
+                frame.setLocationRelativeTo(null);
 
-                    final JTabbedPane pane = new JTabbedPane();
-                    AccountListingTable alt = new AccountListingTable(library,library.getProfile(visiting),false);
+                final JTabbedPane pane = new JTabbedPane();
+                AccountListingTable alt = new AccountListingTable(library,library.getProfile(visiting),false);
 
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+                JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 
-                    JLabel accountName = new JLabel("Account: " + visiting.getEmail());
+                JLabel accountName = new JLabel("Account: " + visiting.getEmail());
 
-                    final Profile[] profile = {library.getProfile(visiting)};
+                final Profile[] profile = {library.getProfile(visiting)};
 
-                    JLabel rating = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
-                    JLabel picture;
-                    if(profile[0].getInit()){
-                        picture = new JLabel((Icon) profile[0].getProfilePic());
-                    }
-                    else{
-                        picture = new JLabel();
-                    }
+                JLabel rating = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
+                JLabel picture;
+                if(profile[0].getInit()){
+                    picture = new JLabel((Icon) profile[0].getProfilePic());
+                }
+                else{
+                    picture = new JLabel();
+                }
 
-                    JButton rateSeller = new JButton("Rate Seller");
+                JButton rateSeller = new JButton("Rate Seller");
 
-                    rateSeller.addActionListener(x -> {
-                        JDialog dialog = new JDialog(frame,true);
-                        dialog.setTitle("B.B.B - New Listing");
+                rateSeller.addActionListener(x -> {
+                    JDialog dialog = new JDialog(frame,true);
+                    dialog.setTitle("B.B.B - New Listing");
 
-                        final JPanel rankPanel = new JPanel(new GridLayout(2,2));
+                    final JPanel rankPanel = new JPanel(new GridLayout(2,2));
 
-                        dialog.setSize(300,100);
-                        dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                        dialog.setLocationRelativeTo(null);
+                    dialog.setSize(300,100);
+                    dialog.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    dialog.setLocationRelativeTo(null);
 
-                        dialog.addWindowListener(new WindowAdapter()
+                    dialog.addWindowListener(new WindowAdapter()
+                    {
+                        public void windowClosing(WindowEvent e)
                         {
-                            public void windowClosing(WindowEvent e)
-                            {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        }
+                    });
+
+                    final JLabel rankLabel = new JLabel("Rank (0 - 5):");
+                    final JTextField rank = new JTextField();
+
+                    rankPanel.add(rankLabel);
+                    rankPanel.add(rank);
+
+                    final JButton submit = new JButton("Rank Seller");
+                    submit.addActionListener(new AbstractAction() {
+                        public void actionPerformed(ActionEvent e) {
+                            if(Double.parseDouble(rank.getText()) < 0 || Double.parseDouble(rank.getText()) > 5){
+                                JOptionPane.showMessageDialog(null,"Error: None of the fields" +
+                                        " may be be above or below the bounds.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                            }
+                            if(rank.getText().equals("")){
+                                JOptionPane.showMessageDialog(null,"Error: None of the fields" +
+                                        " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                            }
+                            else{
+                                library.getProfile(visiting).rankUser(Double.parseDouble(rank.getText()));
+
+                                try {
+                                    library.updateLibrary();
+                                    parseTable(tableModel,library);
+                                } catch (IOException ioException) {
+                                    ioException.printStackTrace();
+                                }
+
+                                rating.setText("Rank: " + profile[0].getRating() / profile[0].getRaters());
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
-                        });
-
-                        final JLabel rankLabel = new JLabel("Rank (0 - 5):");
-                        final JTextField rank = new JTextField();
-
-                        rankPanel.add(rankLabel);
-                        rankPanel.add(rank);
-
-                        final JButton submit = new JButton("Rank Seller");
-                        submit.addActionListener(new AbstractAction() {
-                            public void actionPerformed(ActionEvent e) {
-                                if(Double.parseDouble(rank.getText()) < 0 || Double.parseDouble(rank.getText()) > 5){
-                                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
-                                            " may be be above or below the bounds.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
-                                }
-                                if(rank.getText().equals("")){
-                                    JOptionPane.showMessageDialog(null,"Error: None of the fields" +
-                                            " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
-                                }
-                                else{
-                                    library.getProfile(visiting).rankUser(Double.parseDouble(rank.getText()));
-
-                                    try {
-                                        library.updateLibrary();
-                                        parseTable(tableModel,library);
-                                    } catch (IOException ioException) {
-                                        ioException.printStackTrace();
-                                    }
-
-                                    rating.setText("Rank: " + profile[0].getRating() / profile[0].getRaters());
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                }
-                            }
-                        });
-                        rankPanel.add(submit);
-
-                        final JButton cancel = new JButton("Cancel");
-                        cancel.addActionListener(new AbstractAction() {
-                            public void actionPerformed(ActionEvent e) {
-                                int result = JOptionPane.showConfirmDialog(frame,"Sure? You want to exit?"
-                                        , "BBB - Rank Seller",
-                                        JOptionPane.YES_NO_OPTION,
-                                        JOptionPane.QUESTION_MESSAGE);
-                                if(result == JOptionPane.YES_OPTION){
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                }
-                            }
-                        });
-                        rankPanel.add(cancel);
-
-                        dialog.add(rankPanel, BorderLayout.CENTER);
-                        dialog.setVisible(true);
+                        }
                     });
+                    rankPanel.add(submit);
 
-                    panel.add(accountName);
-                    panel.add(rating);
-                    panel.add(picture);
-                    panel.add(rateSeller);
-                    panel.add(alt);
+                    final JButton cancel = new JButton("Cancel");
+                    cancel.addActionListener(new AbstractAction() {
+                        public void actionPerformed(ActionEvent e) {
+                            int result = JOptionPane.showConfirmDialog(frame,"Sure? You want to exit?"
+                                    , "BBB - Rank Seller",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE);
+                            if(result == JOptionPane.YES_OPTION){
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            }
+                        }
+                    });
+                    rankPanel.add(cancel);
 
-                    pane.addTab("Seller Account", panel);
+                    dialog.add(rankPanel, BorderLayout.CENTER);
+                    dialog.setVisible(true);
+                });
 
-                    frame.add(pane);
-                    frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    frame.setVisible(true);
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
+                panel.add(accountName);
+                panel.add(rating);
+                panel.add(picture);
+                panel.add(rateSeller);
+                panel.add(alt);
+
+                pane.addTab("Seller Account", panel);
+
+                frame.add(pane);
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.setVisible(true);
             }
         };
         ButtonColumn visitButton = new ButtonColumn(table,visit,2);
@@ -427,7 +472,12 @@ class SellerTable extends JPanel {
         add(scrollPane);
     }
 
-    public static void parseTable(DefaultTableModel table,Library library) throws IOException {
+    /**
+     * This method is used to fill the BookTable with information and doesn't show the current user their own listings
+     * @param library The Library instance containing the data needed to initialize
+     * @param table The current state of the BookTable
+     */
+    public static void parseTable(DefaultTableModel table,Library library){
         List<Profile> profileList = library.getProfileRegistry();
         Account currentUser = Home.currentUser();
 
@@ -445,17 +495,32 @@ class SellerTable extends JPanel {
     }
 }
 
+/**
+ * The AccountListingTable class extends JPanel to create the tab showing all the listings for the current user.
+ *
+ * @author  Tom Pechulis
+ * @version 1.1
+ * @since   2020-11-4
+ */
 class AccountListingTable extends JPanel {
     Library library;
     Profile profile;
     DefaultTableModel tableModel;
 
+    /**
+     * This method is used to add a new row to the AccountListingTable
+     * @param l The listing being added to the AccountListingTable
+     */
     public void addRow(Listing l){
         Object [] row = {l.getSeller(),l.getTitle(),l.getAuthor(), String.valueOf(l.getPrice()), l.getIsbn(),l.getEdition(),l.getCondition(), new ImageIcon(l.getImage().getPath().getAbsolutePath()), "Edit", "Delete"};
         tableModel.addRow(row);
     }
 
-    public AccountListingTable(Library library, Profile profile, boolean isOwner) throws IOException {
+    /**
+     * This method is used to initialize the AccountListingTable with the information from the Library
+     * @param library The Library instance containing the data needed to initialize
+     */
+    public AccountListingTable(Library library, Profile profile, boolean isOwner) {
         super();
 
         this.library = library;
@@ -562,7 +627,13 @@ class AccountListingTable extends JPanel {
         }
     }
 
-    public static void parseTable(DefaultTableModel table,Library library, Profile profile, boolean isOwner) throws IOException {
+    /**
+     * This method is used to fill the AccountListingTable with information, also used when visiting a Profile
+     * @param library The Library instance containing the data needed to initialize
+     * @param table The current state of the BookTable
+     * @param isOwner Checks if table is for the current suer
+     */
+    public static void parseTable(DefaultTableModel table,Library library, Profile profile, boolean isOwner){
         List<Listing> listingList = library.getListings(profile);
 
         for(int i = 0; i < table.getRowCount(); i++){

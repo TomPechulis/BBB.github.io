@@ -16,9 +16,14 @@ public class Profile {
     private Account account;
     private boolean init = false;
 
-    Profile(){
-    }
-
+    /**
+     * Class constructor
+     * @param account The Account of the associated Profile
+     * @param rating The 5.0 scale rating of the user
+     * @param raters Number of people who have rated the user
+     * @param p The profile picture of the user
+     * @param l The list of Listings associated with the user
+     */
     Profile(Account account, double rating, int raters, ImageCustom p, List<Listing> l){
         this.account = account;
         this.rating = rating;
@@ -27,52 +32,95 @@ public class Profile {
         this.listingList = l;
     }
 
+    /**
+     * Gets the current rating of the Profile
+     * @return String This returns the rating of the Profile
+     */
     public double getRating() {
         return rating;
     }
+    /**
+     * Sets the rating of the Profile
+     * @param rating The new rating
+     */
     public void setRating(double rating) {
         this.rating = rating;
     }
+
+    /**
+     * Allows user to rate another Profile
+     * @param rating Added to rating total
+     */
     public void rankUser(double rating) {
         this.rating += rating;
         raters++;
     }
 
+    /**
+     * Gets the current raters of the Profile
+     * @return String This returns the raters of the Profile
+     */
     public int getRaters() {
         return raters;
     }
-    public void setRaters(int raters) {
-        this.raters = raters;
-    }
 
+    /**
+     * Gets the current profilePic of the Profile
+     * @return String This returns the profilePic of the Profile
+     */
     public ImageCustom getProfilePic() {
         return profilePic;
     }
+    /**
+     * Sets the profilePic of the Profile
+     * @param i The new profilePic
+     */
     public void setProfilePic(ImageCustom i){
         profilePic = i;
     }
 
+    /**
+     * Gets the current status of the profile picture initialization of the Profile
+     * @return String This returns the init of the Profile
+     */
     public boolean getInit(){
         return init;
     }
+    /**
+     * Sets the init of the Profile
+     * @param b The new init
+     */
     public void setInit(boolean b){
         this.init = b;
     }
 
+    /**
+     * Gets the current listingList of the Profile
+     * @return String This returns the listingList of the Profile
+     */
     public List<Listing> getListingList() {
         return listingList;
     }
-    public void setListingList(List<Listing> listingList) {
-        this.listingList = listingList;
-    }
 
+    /**
+     * Sets the account of the Profile
+     * @param b The new account
+     */
     public void setAccount(Account b){
         this.account = b;
     }
+    /**
+     * Gets the current account of the Profile
+     * @return String This returns the account of the Profile
+     */
     public Account getAccount(){
         return this.account;
     }
 
+    /**
+     * Allows user to edit their own Profile
+     * @param dialog Current JDialog window
+     */
     public void editProfile(JDialog dialog){
         final JPanel loginPanel = new JPanel(new GridLayout(4,2));
 
@@ -173,6 +221,10 @@ public class Profile {
         dialog.setVisible(true);
     }
 
+    /**
+     * Allows user to create a new Listing
+     * @param dialog Current JDialog window
+     */
     public Listing newListing(JDialog dialog){
         final JPanel listingPanel = new JPanel(new GridLayout(8,1));
 
@@ -291,6 +343,11 @@ public class Profile {
         return l1[0];
     }
 
+    /**
+     * Allows user to edit created listing
+     * @param dialog The current JDialog window
+     * @param l The Listing being edited
+     */
     public Listing editListing(JDialog dialog,Listing l){
         final JPanel listingPanel = new JPanel(new GridLayout(8,1));
 
@@ -409,6 +466,10 @@ public class Profile {
         return l1[0];
     }
 
+    /**
+     * Confirmation dialog
+     * @param log Current JDialog window
+     */
     public void createWindow(JDialog log) {
         JFrame frame = new JFrame("Confirm");
 

@@ -3,14 +3,29 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.regex.Pattern;
 
+/**
+ * The Login class creates the login window for the user
+ *
+ * @author  Chris Torres
+ * @version 1.0
+ * @since   2020-10-5
+ */
 public class Login {
     private boolean checkLogin = false;
     private Account curr = null;
 
+    /**
+     * This method gets the currently signed in Account
+     * @return Account The currently signed in Account
+     */
     public Account getAcc(){
         return curr;
     }
 
+    /**
+     * Creates login window
+     * @param library The current instance of Library
+     */
     public void getLogin(final Library library){
         final Object lock = new Object();
 
@@ -157,6 +172,10 @@ public class Login {
         }
     }
 
+    /**
+     * Checks if login successful or not
+     * @return boolean Indicates status of login
+     */
     public boolean checkLogin(){
         return checkLogin;
     }

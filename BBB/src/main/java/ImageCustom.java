@@ -1,34 +1,36 @@
 import java.io.File;
 
+/**
+ * The ImageCustom stores the information about an image uploaded by a user.
+ *
+ * @author  Tyler Crumrine
+ * @version 1.2
+ * @since   2020-10-25
+ */
 public class ImageCustom {
     private String type = "zzz";
     private double size;
     private File path;
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public double getSize() {
-        return size;
-    }
-
-    public void setSize(double size) {
-        this.size = size;
-    }
-
+    /**
+     * Gets the current path of the ImageCustom
+     * @return String The current path of the ImageCustom
+     */
     public File getPath() {
         return path;
     }
-
+    /**
+     * Sets the path of the Account
+     * @param path The new File path
+     */
     public void setPath(File path) {
         this.path = path;
     }
 
+    /**
+     * Class constructor
+     * @param p The File passed by the user
+     */
     ImageCustom(File p){
         this.path = p;
 
@@ -44,6 +46,10 @@ public class ImageCustom {
         size = p.length();
     }
 
+    /**
+     * This method checks if the image is a JPG/PNG and less than 50 mb
+     * @return boolean Checks if file meets type and size requirements
+     */
     public boolean verifyImage(){
         return((type.equals("PNG") || type.equals("png") || type.equals("JPG") || type.equals("jpg")) && size <= 50000000.0);
     }

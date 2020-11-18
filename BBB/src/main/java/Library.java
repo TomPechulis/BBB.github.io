@@ -3,6 +3,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * The Library class is an information expert for the application.
+ *
+ * @author  Chris Torres
+ * @version 1.2
+ * @since   2020-10-10
+ */
 public class Library {
     private final List<Account> accountRegistry = new ArrayList<>();
     private final List<Listing> listingRegistry = new ArrayList<>();
@@ -12,30 +19,47 @@ public class Library {
     private final File listingFile = new File("src/main/resources/listingRegistry.csv");
     private final File profileFile = new File("src/main/resources/profileRegistry.csv");
 
+    /**
+     * Class constructor
+     */
     public Library(){
         fillLibrary();
     }
 
+    /**
+     * This method checks if an entered Account is registered in the system
+     * @param email The email of the user
+     * @param password  The password of the user's account
+     * @return boolean Checks if Account exists in accountRegistry
+     */
     public boolean checkAccountRegistry(String email, String password){
         for(Account a : accountRegistry){
             if(a.getEmail().equals(email) && a.getPassword().equals(password)){
                 return true;
             }
         }
-
         return false;
     }
 
+    /**
+     * Gets account associated with passed email
+     * @param email The email of the user
+     * @return Account Gives Account associated with email
+     */
     public Account findAccount(String email){
         for(Account a : accountRegistry){
             if(a.getEmail().equals(email)){
                 return a;
             }
         }
-
         return null;
     }
 
+    /**
+     * Gets the Profile associated with an Account
+     * @param a Account of specified user
+     * @return Profile Gets Profile associated with an Account
+     */
     public Profile getProfile(Account a){
         Profile profile = null;
 
@@ -44,10 +68,14 @@ public class Library {
                 profile = b;
             }
         }
-
         return profile;
     }
 
+    /**
+     * Gets List of Listings associated with passed Profile
+     * @param p Profile of specified user
+     * @return List<Listing></Listing> All Listings of passed Profile
+     */
     public List<Listing> getListings(Profile p){
         List<Listing> listingList = new ArrayList<>();
         for(Listing l : listingRegistry){
@@ -58,14 +86,26 @@ public class Library {
         return listingList;
     }
 
+    /**
+     * Gets the current listingRegistry
+     * @return List<Listing></Listing> The current listingRegistry
+     */
     public List<Listing> getListingRegistry() {
         return listingRegistry;
     }
-
+    /**
+     * Gets the current profileRegistry
+     * @return List<Profile></Profile> The current profileRegistry
+     */
     public List<Profile> getProfileRegistry() {
         return profileRegistry;
     }
 
+    /**
+     * Adds a new Account to accountRegistry
+     * @param email The email of the new Account
+     * @param password The password of the new Account
+     */
     public void addAccount(String email, String password){
         try {
             FileWriter fr = new FileWriter(accountFile,true);
@@ -84,6 +124,10 @@ public class Library {
         }
     }
 
+    /**
+     * Adds a new Profile to profileRegistry
+     * @param a Newly created Account
+     */
     public void addProfile(Account a){
         try {
             FileWriter fr = new FileWriter(profileFile,true);
@@ -118,6 +162,10 @@ public class Library {
         }
     }
 
+    /**
+     * Updates each registry file to the current state of the registry list
+     * @throws IOException Thrown if files can't be accessed
+     */
     public void updateLibrary() throws IOException {
         PrintWriter writer = new PrintWriter(profileFile);
         writer.print("");
@@ -165,6 +213,10 @@ public class Library {
         }
     }
 
+    /**
+     * Adds a new Listing to listingRegistry
+     * @param l Newly created Listing
+     */
     public void addListing(Listing l){
         try {
             FileWriter fr = new FileWriter(listingFile,true);
@@ -195,6 +247,9 @@ public class Library {
         }
     }
 
+    /**
+     * Fills registry lists with contents of registry files
+     */
     public void fillLibrary(){
         try{
             BufferedReader accountReader = new BufferedReader(new FileReader(accountFile));
@@ -255,6 +310,10 @@ public class Library {
 
     }
 
+    /**
+     * Updates listingRegistry file with contents of listingRegistry list
+     * @throws IOException Thrown if files can't be accessed
+     */
     public void exportListings() throws IOException {
         PrintWriter writer = new PrintWriter(listingFile);
         writer.print("");

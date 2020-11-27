@@ -11,6 +11,7 @@ import java.awt.event.WindowEvent;
 import java.io.*;
 
 import java.awt.Image;
+import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -253,7 +254,7 @@ class BookTable extends JPanel {
                     if (str.length() == 0) {
                         sorter.setRowFilter(null);
                     } else {
-                        sorter.setRowFilter(RowFilter.regexFilter(str,3));
+                        sorter.setRowFilter(RowFilter.regexFilter(str,4));
                     }
                 }
             }
@@ -334,7 +335,8 @@ class SellerTable extends JPanel {
 
                 final Profile[] profile = {library.getProfile(visiting)};
 
-                JLabel rating = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
+                DecimalFormat numberFormat = new DecimalFormat("#.00");
+                JLabel rating = new JLabel("Rank: " + numberFormat.format(profile[0].getRating() / profile[0].getRaters()));
                 JLabel picture;
                 if(profile[0].getInit()){
                     picture = new JLabel((Icon) profile[0].getProfilePic());
@@ -347,7 +349,7 @@ class SellerTable extends JPanel {
 
                 rateSeller.addActionListener(x -> {
                     JDialog dialog = new JDialog(frame,true);
-                    dialog.setTitle("B.B.B - New Listing");
+                    dialog.setTitle("B.B.B - Rate Seller");
 
                     final JPanel rankPanel = new JPanel(new GridLayout(2,2));
 
@@ -375,23 +377,25 @@ class SellerTable extends JPanel {
                         public void actionPerformed(ActionEvent e) {
                             if(Double.parseDouble(rank.getText()) < 0 || Double.parseDouble(rank.getText()) > 5){
                                 JOptionPane.showMessageDialog(null,"Error: None of the fields" +
-                                        " may be be above or below the bounds.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                                        " may be be above or below the bounds.", "B.B.B - Rank", JOptionPane.ERROR_MESSAGE);
                             }
-                            if(rank.getText().equals("")){
+                            else if(rank.getText().equals("")){
                                 JOptionPane.showMessageDialog(null,"Error: None of the fields" +
-                                        " may be blank.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                                        " may be blank.", "B.B.B - Rank", JOptionPane.ERROR_MESSAGE);
                             }
                             else{
                                 library.getProfile(visiting).rankUser(Double.parseDouble(rank.getText()));
 
                                 try {
                                     library.updateLibrary();
-                                    parseTable(tableModel,library);
+                                    //parseTable(tableModel,library);
                                 } catch (IOException ioException) {
                                     ioException.printStackTrace();
                                 }
-
-                                rating.setText("Rank: " + profile[0].getRating() / profile[0].getRaters());
+                                DecimalFormat numberFormat = new DecimalFormat("#.00");
+                                rating.setText("Rank: " + numberFormat.format(profile[0].getRating() / profile[0].getRaters()));
+                                table.setValueAt((numberFormat.format(profile[0].getRating() / profile[0].getRaters())),table.getSelectedRow(),1);
+                                tableModel.fireTableDataChanged();
                                 dialog.setVisible(false);
                                 dialog.dispose();
                             }
@@ -462,10 +466,11 @@ class SellerTable extends JPanel {
                 if (str.length() == 0) {
                     sorter.setRowFilter(null);
                 } else {
-                    sorter.setRowFilter(RowFilter.regexFilter(str,1));
+                    sorter.setRowFilter(RowFilter.regexFilter(str,0));
                 }
             }
         });
+        table.setRowHeight(table.getRowHeight() + 50);
 
         searchBar.add(seller);
         add(searchBar);
@@ -489,7 +494,9 @@ class SellerTable extends JPanel {
             if(p.getAccount().equals(currentUser)){
                 continue;
             }
-            String [] row = {p.getAccount().getEmail(),String.valueOf(p.getRating() / p.getRaters()),"Visit"};
+            DecimalFormat numberFormat = new DecimalFormat("#.00");
+            String temp = numberFormat.format(p.getRating()/p.getRaters());
+            String [] row = {p.getAccount().getEmail(),temp,"Visit"};
             table.addRow(row);
         }
     }
@@ -615,7 +622,13 @@ class AccountListingTable extends JPanel {
             parseTable(tableModel,library,profile,false);
 
             TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
-            JTable table = new JTable(tableModel);
+            JTable table = new JTable(tableModel)      {
+                //  Returning the Class of each column will allow different
+                //  renderers to be used based on Class
+                public Class getColumnClass(int column) {
+                    return getValueAt(0, column).getClass();
+                }
+            };
             table.setRowSorter(sorter);
             table.setPreferredScrollableViewportSize(new Dimension(500, 70));
             table.setFillsViewportHeight(true);

@@ -1,10 +1,9 @@
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -64,7 +63,20 @@ class LibraryTest {
     }
 
     @Test
-    void getProfile() {
+    void findAccountFail(){
+        Account account = new Account("test1@baylor.edu","TesterPass1");
+
+        assertNotEquals(account, library.findAccount("test1@baylor.edu"));
+    }
+
+    @Test
+    void getProfile(){
+        Account account = new Account("test@baylor.edu","TesterPass1");
+        assertNotNull(library.getProfile(account));
+    }
+
+    @Test
+    void getProfileFail() {
         Account account = new Account("test1@baylor.edu","TesterPass1");
 
         assertNull(library.getProfile(account));
@@ -92,4 +104,76 @@ class LibraryTest {
 
         assertEquals(2,library.profileRegistry.size());
     }
+
+    @Test
+    void updateLibraryProf() throws IOException {
+        Account account = new Account("test1@baylor.edu","TesterPass1");
+        Profile p = new Profile(account, 5.00, 1, null, null);
+        library.profileRegistry.add(p);
+        library.updateLibrary();
+        assertEquals(89, library.profileFile.length());
+    }
+
+    @Test
+    void updateLibraryAcc() throws IOException {
+        Account account = new Account("test1@baylor.edu","TesterPass1");
+        library.accountRegistry.add(account);
+        library.updateLibrary();
+        assertEquals(44, library.profileFile.length());
+    }
+
+
+    @Test
+    void addListing(){
+        Account account = new Account("test@baylor.edu","TesterPass1");
+        library.addProfile(account);
+        ImageCustom image = new ImageCustom(new File("null"));
+        Listing l = new Listing("test@baylor.edu", "title", "author", "1234-5678", 10.99, "5th", "Used", image);
+        library.addListing(l);
+
+        assertEquals(2, library.listingRegistry.size());
+    }
+
+
+    @Test
+    void fillLibraryAccountReg() throws FileNotFoundException {
+        Account account = new Account("test1@baylor.edu","TesterPass1");
+        PrintWriter writer = new PrintWriter(accountFile);
+        writer.append("test1@baylor.edu,TesterPass1\n");
+        writer.close();
+        library.fillLibrary();
+        assertTrue(library.accountRegistry.contains(account));
+    }
+
+    @Test
+    void fillLibraryListingReg() throws FileNotFoundException {
+        ImageCustom image = new ImageCustom(new File("C:\\Users\\ctorr\\Documents\\kitten-report1.jpg"));
+        Listing l = new Listing("test1@baylor.edu","Title1","Author1","ISBN1",1.0,"Edition1","Condition1",image);
+        PrintWriter writer= new PrintWriter(listingFile);
+        writer.append("test1@baylor.edu,Title1,Author1,ISBN1,1.0,Edition1,Condition1,C:\\Users\\ctorr\\Documents\\kitten-report1.jpg\n");
+        writer.close();
+        library.fillLibrary();
+        assertEquals(2,library.listingRegistry.size());
+    }
+
+    @Test
+    void fillLibraryProfileReg() throws FileNotFoundException {
+        Account account = new Account("test1@baylor.edu","TesterPass1");
+        Profile p = new Profile(account, 5.00, 1, null, null);
+        PrintWriter writer = new PrintWriter(profileFile);
+        writer.append("test1@baylor.edu,TesterPass1,5.00,1,null,null\n");
+        writer.close();
+        library.fillLibrary();
+        assertEquals(2, library.profileRegistry.size());
+    }
+
+    @Test
+    void exportListings() throws IOException {
+        ImageCustom image = new ImageCustom(new File("C:\\Users\\ctorr\\Documents\\kitten-report1.jpg"));
+        Listing l = new Listing("test1@baylor.edu","Title1","Author1","ISBN1",1.0,"Edition1","Condition1",image);
+        library.listingRegistry.add(l);
+        library.exportListings();
+        assertEquals(317, listingFile.length());
+    }
+
 }

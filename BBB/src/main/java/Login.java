@@ -132,9 +132,13 @@ public class Login {
                             JOptionPane.showMessageDialog(null,"Error: The email does not" +
                                     " belong to Baylor University", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
                         }
-                        else if(library.checkAccountRegistry(loginEmail.getText(),password.getText())){
+                        else if(library.checkEmailTaken(emailText.getText())){
                             JOptionPane.showMessageDialog(null,"Error: A User with that" +
                                     " email already exists.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if(library.checkAccountRegistry(emailText.getText(),password.getText())){
+                            JOptionPane.showMessageDialog(null,"Error: A User with that" +
+                                    " email and password already exists.", "B.B.B - Login", JOptionPane.ERROR_MESSAGE);
                         }
                         else{
                             library.addAccount(emailText.getText(),password.getText());

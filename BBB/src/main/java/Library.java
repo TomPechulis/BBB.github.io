@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,14 +16,14 @@ public class Library {
     private final List<Listing> listingRegistry = new ArrayList<>();
     private final List<Profile> profileRegistry = new ArrayList<>();
 
-    private final File accountFile = new File("src/main/resources/accountRegistry.csv");
-    private final File listingFile = new File("src/main/resources/listingRegistry.csv");
-    private final File profileFile = new File("src/main/resources/profileRegistry.csv");
+    private final File accountFile = new File(getClass().getResource("accountRegistry.csv").toURI());
+    private final File listingFile = new File(getClass().getResource("listingRegistry.csv").toURI());
+    private final File profileFile = new File(getClass().getResource("profileRegistry.csv").toURI());
 
     /**
      * Class constructor
      */
-    public Library(){
+    public Library() throws URISyntaxException {
         fillLibrary();
     }
 
@@ -35,6 +36,20 @@ public class Library {
     public boolean checkAccountRegistry(String email, String password){
         for(Account a : accountRegistry){
             if(a.getEmail().equals(email) && a.getPassword().equals(password)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method checks if an entered Email is registered in the system
+     * @param email The email of the user
+     * @return boolean Checks if Account exists in accountRegistry
+     */
+    public boolean checkEmailTaken(String email){
+        for(Account a : accountRegistry){
+            if(a.getEmail().equals(email)){
                 return true;
             }
         }
@@ -93,6 +108,7 @@ public class Library {
     public List<Listing> getListingRegistry() {
         return listingRegistry;
     }
+
     /**
      * Gets the current profileRegistry
      * @return List<Profile></Profile> The current profileRegistry

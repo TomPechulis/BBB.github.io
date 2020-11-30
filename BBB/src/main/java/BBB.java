@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * The BBB class initializes the application
@@ -13,7 +14,7 @@ public class BBB {
      * is successful, the Home screen is generated.
      * @param args Nothing.
      */
-    public static void main(String [] args) throws IOException {
+    public static void main(String [] args) throws IOException, URISyntaxException {
 
         Library library = new Library();
 

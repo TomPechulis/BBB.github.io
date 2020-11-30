@@ -12,6 +12,7 @@ import java.io.*;
 
 import java.awt.Image;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -89,8 +90,15 @@ public class Home {
             dialog.setTitle("B.B.B - New Listing");
             Listing l = profile[0].newListing(dialog);
 
-            if(l != null){
+            if(l != null && profile[0].getListingList() != null){
                 profile[0].getListingList().add(l);
+                library.addListing(l);
+                alt.addRow(l);
+            }
+            else if(l != null && profile[0].getListingList() == null){
+                List<Listing> temp = new ArrayList<>();
+                temp.add(l);
+                profile[0].setListingList(temp);
                 library.addListing(l);
                 alt.addRow(l);
             }
@@ -107,6 +115,7 @@ public class Home {
 
                 try{
                     library.updateLibrary();
+
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }

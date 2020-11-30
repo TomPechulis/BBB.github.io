@@ -101,6 +101,7 @@ public class Profile {
     public List<Listing> getListingList() {
         return listingList;
     }
+    public void setListingList(List<Listing> l){this.listingList=l;}
 
     /**
      * Sets the account of the Profile

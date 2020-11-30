@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,18 +11,18 @@ import java.util.List;
  * @since   2020-10-10
  */
 public class Library {
-    private final List<Account> accountRegistry = new ArrayList<>();
-    private final List<Listing> listingRegistry = new ArrayList<>();
-    private final List<Profile> profileRegistry = new ArrayList<>();
+    final List<Account> accountRegistry = new ArrayList<>();
+    final List<Listing> listingRegistry = new ArrayList<>();
+    final List<Profile> profileRegistry = new ArrayList<>();
 
-    private final File accountFile = new File(getClass().getResource("accountRegistry.csv").toURI());
-    private final File listingFile = new File(getClass().getResource("listingRegistry.csv").toURI());
-    private final File profileFile = new File(getClass().getResource("profileRegistry.csv").toURI());
+    final File accountFile = new File("src/main/resources/accountRegistry.csv");
+    final File listingFile = new File("src/main/resources/listingRegistry.csv");
+    final File profileFile = new File("src/main/resources/profileRegistry.csv");
 
     /**
      * Class constructor
      */
-    public Library() throws URISyntaxException {
+    public Library(){
         fillLibrary();
     }
 

@@ -88,9 +88,12 @@ public class Home {
             JDialog dialog = new JDialog(frame,true);
             dialog.setTitle("B.B.B - New Listing");
             Listing l = profile[0].newListing(dialog);
-            profile[0].getListingList().add(l);
-            library.addListing(l);
-            alt.addRow(l);
+
+            if(l != null){
+                profile[0].getListingList().add(l);
+                library.addListing(l);
+                alt.addRow(l);
+            }
         });
 
         JButton editProfileButton = new JButton("Edit Profile");

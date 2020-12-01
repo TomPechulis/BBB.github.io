@@ -375,12 +375,15 @@ class SellerTable extends JPanel {
 
                 DecimalFormat numberFormat = new DecimalFormat("#.00");
                 JLabel rating = new JLabel("Rank: " + numberFormat.format(profile[0].getRating() / profile[0].getRaters()));
-                JLabel picture;
-                if(profile[0].getInit()){
-                    picture = new JLabel((Icon) profile[0].getProfilePic());
-                }
-                else{
-                    picture = new JLabel();
+
+                if(profile[0].getProfilePic() != null){
+                    ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
+
+                    Image image = imageIcon.getImage(); // transform it
+                    Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+                    imageIcon = new ImageIcon(newimg);  // transform it back
+
+                    panel.add(new JLabel(imageIcon));
                 }
 
                 JButton rateSeller = new JButton("Rate Seller");
@@ -462,7 +465,6 @@ class SellerTable extends JPanel {
 
                 panel.add(accountName);
                 panel.add(rating);
-                panel.add(picture);
                 panel.add(rateSeller);
                 panel.add(alt);
 

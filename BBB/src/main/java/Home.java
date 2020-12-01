@@ -280,19 +280,19 @@ class BookTable extends JPanel {
                     if (str.length() == 0) {
                         sorter.setRowFilter(null);
                     } else {
-                        sorter.setRowFilter(RowFilter.regexFilter(str,1));
+                        sorter.setRowFilter(RowFilter.regexFilter("(?i)"+str,1));
                     }
                 }else if(toggle2.isSelected()){
                     if (str.length() == 0) {
                         sorter.setRowFilter(null);
                     } else {
-                        sorter.setRowFilter(RowFilter.regexFilter(str,2));
+                        sorter.setRowFilter(RowFilter.regexFilter("(?i)"+str,2));
                     }
                 }else if(toggle3.isSelected()){
                     if (str.length() == 0) {
                         sorter.setRowFilter(null);
                     } else {
-                        sorter.setRowFilter(RowFilter.regexFilter(str,4));
+                        sorter.setRowFilter(RowFilter.regexFilter("(?i)"+str,4));
                     }
                 }
             }
@@ -506,7 +506,7 @@ class SellerTable extends JPanel {
                 if (str.length() == 0) {
                     sorter.setRowFilter(null);
                 } else {
-                    sorter.setRowFilter(RowFilter.regexFilter(str,0));
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)"+str,0));
                 }
             }
         });

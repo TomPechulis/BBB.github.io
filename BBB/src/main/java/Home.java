@@ -74,13 +74,16 @@ public class Home {
         JLabel accountName = new JLabel("Account: " + currentAccount.getEmail());
 
         JLabel rank = new JLabel("Rank: " + profile[0].getRating() / profile[0].getRaters());
-        JLabel picture;
+        //JLabel picture;
+        /*
         if(profile[0].getInit()){
             picture = new JLabel((Icon) profile[0].getProfilePic());
         }
         else{
             picture = new JLabel();
         }
+*/
+
         JButton newListingButton = new JButton("New Listing");
         AccountListingTable alt = new AccountListingTable(library, profile[0],true);
 
@@ -106,6 +109,7 @@ public class Home {
 
         JButton editProfileButton = new JButton("Edit Profile");
 
+
         editProfileButton.addActionListener(new AbstractAction() {
             public void actionPerformed(ActionEvent e){
                 profile[0] = library.getProfile(currentAccount);
@@ -119,12 +123,34 @@ public class Home {
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
+
+                ImageIcon imageIcon = new ImageIcon(profile[0].getProfilePic().getPath().getAbsolutePath());
+                Image image = imageIcon.getImage(); // transform it
+                Image newimg = image.getScaledInstance(90, 90, java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
+                imageIcon = new ImageIcon(newimg);  // transform it back
+
+                userPanel.remove(userPanel.getComponent(0));
+                userPanel.remove(accountName);
+                userPanel.remove(rank);
+                userPanel.remove(newListingButton);
+                userPanel.remove(editProfileButton);
+                userPanel.remove(alt);
+                userPanel.add(new JLabel(imageIcon));
+                userPanel.add(accountName);
+                userPanel.add(rank);
+                userPanel.add(newListingButton);
+                userPanel.add(editProfileButton);
+                userPanel.add(alt);
+                frame.revalidate();
+                frame.repaint();
+
             }
         });
 
+
         userPanel.add(accountName);
         userPanel.add(rank);
-        userPanel.add(picture);
+        //userPanel.add(picture);
         userPanel.add(newListingButton);
         userPanel.add(editProfileButton);
         userPanel.add(alt);

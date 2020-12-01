@@ -216,14 +216,14 @@ class BookTable extends JPanel {
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE);
                 if(result == JOptionPane.YES_OPTION) {
-                    ImageCustom i = new ImageCustom(new File(table.getValueAt(modelRow,7).toString()));
+                    ImageCustom i = new ImageCustom(new File(tableModel.getValueAt(modelRow,7).toString()));
 
-                    Listing temp = new Listing(table.getValueAt(modelRow,0).toString(),table.getValueAt(modelRow,1).toString(),
-                            table.getValueAt(modelRow,2).toString(),table.getValueAt(modelRow,4).toString(),
-                            Double.parseDouble(table.getValueAt(modelRow,3).toString()),table.getValueAt(modelRow,5).toString(),
-                            table.getValueAt(modelRow,6).toString(),i);
+                    Listing temp = new Listing(tableModel.getValueAt(modelRow,0).toString(),tableModel.getValueAt(modelRow,1).toString(),
+                            tableModel.getValueAt(modelRow,2).toString(),tableModel.getValueAt(modelRow,4).toString(),
+                            Double.parseDouble(tableModel.getValueAt(modelRow,3).toString()),tableModel.getValueAt(modelRow,5).toString(),
+                            tableModel.getValueAt(modelRow,6).toString(),i);
 
-                    Purchase p = new Purchase(table.getValueAt(modelRow,0).toString(), prof.getAccount().getEmail(), temp);
+                    Purchase p = new Purchase(tableModel.getValueAt(modelRow,0).toString(), prof.getAccount().getEmail(), temp);
                     p.purchaseEmail();
                 }
                 else if(result == JOptionPane.NO_OPTION){
